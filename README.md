@@ -4,7 +4,7 @@ A simple way of communicating with potential love interests, friends, family and
 Serves as a way for CS majors to talk with each other, cause Snapchat and Instagram are gross with their frontends.
 
 Collaborators:<br/>
-- **Jesus Avalos**
+- **Jesus Avalos (javalosr@calpoly.edu)**
 - **Name 2**
 - **Name 3**
 
