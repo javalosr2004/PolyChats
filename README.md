@@ -6,6 +6,6 @@ Serves as a way for CS majors to talk with each other, cause Snapchat and Instag
 Collaborators:<br/>
 - **Jesus Avalos (javalosr@calpoly.edu)**
 - **Aidan Meese (ahmeese@calpoly.edu)**
-- **Name 3**
+- **Noah Giboney (ngiboney@calpoly.edu)**
 
 **Technical Spec:**
