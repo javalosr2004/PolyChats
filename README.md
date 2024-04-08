@@ -1,11 +1,11 @@
 # PolyChats
 
 A simple way of communicating with potential love interests, friends, family and dogs. Only caveat is you need to only use API requests. Think of it as a game, rather than a functional service.
-Serves as a way for CS majors to talk with each other, cause Snapchat and Instagram are gross with their frontends.
+Serves as a way for CS majors to talk with each other, cause Snapchat and Instagram are gross with their frontends. Posts can be written and accessed by the appropriate write and read operations.
 
 Collaborators:<br/>
 - **Jesus Avalos (javalosr@calpoly.edu)**
-- **Name 2**
+- **Aidan Meese (ahmeese@calpoly.edu)**
 - **Name 3**
 
 **Technical Spec:**
