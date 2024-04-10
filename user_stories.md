@@ -13,10 +13,12 @@
 
 # Exceptions:
 
-- If a student enters a wrong username, it will display a message that an account with this username does not exists.
-- If a student enters the wrong pin it will alert of the error and ask them to try again.
-- If a student attempts to register with a username that is taken it should display a message and ask them to pick another username
-- If a student attempts to make an empty post, it will dipaly and error message and tell a post requires a body.
+- If a STUDENT enters a wrong username, it will display a message that an account with this username does not exists.
+- As a STUDENT, if I enter a password that doesn’t meet the security requirements during registration, the system will display a message detailing the requirements.
+- If a STUDENT enters the wrong pin it will alert of the error and ask them to try again.
+- If a STUDENT attempts to register with a username that is taken it should display a message and ask them to pick another username
+- If a STUDENT attempts to make an empty post, it will dipaly and error message and tell a post requires a body.
+- If a STUDENT tries to search for a user that does not exist it will let them know that no user has been found.
 
 
 
