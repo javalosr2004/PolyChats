@@ -15,7 +15,7 @@
 # Exceptions:
 
 - If a STUDENT enters a wrong username, it will display a message that an account with this username does not exists.
-- As a STUDENT, if I enter a password that doesn’t meet the security requirements during registration, the system will display a message detailing the requirements.
+- If a STUDENT, if I enter a password that doesn’t meet the security requirements during registration, the system will display a message detailing the requirements.
 - If a STUDENT enters the wrong pin it will alert of the error and ask them to try again.
 - If a STUDENT attempts to register with a username that is taken it should display a message and ask them to pick another username
 - If a STUDENT attempts to make an empty post, it will dipaly and error message and tell a post requires a body.
@@ -24,5 +24,6 @@
 - If a STUDENT attempts to like a post that doesn't exist, it will display an error message, stating that the post doesn't exist or has been deleted.
 - If a STUDENT attempts to delete a post that doesn't exist, it will display an error message, stating that the post doesn't exist or has been deleted.
 - If a STUDENT attemps to change username to one that has been taken, error message will be returned stating that the username has been taken.
+- If a STUDENT, if I try to like or dislike a post more than once, the system will display a message indicating that my reaction has already been recorded, to prevent multiple reactions from the same user.
 
 
