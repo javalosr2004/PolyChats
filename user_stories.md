@@ -20,6 +20,8 @@
 - If a STUDENT attempts to make an empty post, it will dipaly and error message and tell a post requires a body.
 - If a STUDENT tries to search for a user that does not exist it will let them know that no user has been found.
 - As a STUDENT, if I attempt to access a restricted feature without the appropriate permissions, the system will display a message indicating that I do not have access to this feature, to ensure that users understand their access limitations.
-
+- If a STUDENT attempts to like a post that doesn't exist, it will display an error message, stating that the post doesn't exist or has been deleted.
+- If a STUDENT attempts to delete a post that doesn't exist, it will display an error message, stating that the post doesn't exist or has been deleted.
+- If a STUDENT attemps to change username to one that has been taken, error message will be returned stating that the username has been taken.
 
 
