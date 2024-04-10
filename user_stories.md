@@ -12,6 +12,7 @@
 - As a STUDENT, I want to get information about other users so that I can view their profile.
 - As a STUDENT, I want to change my username if I regret my old username.
 - As a STUDENT, I want to edit my previous posts if I want to change my ideas.
+- As a STUDENT, I want to be able to follow people, so that I can only view their posts and keep myself in a bubble.
 
 # Exceptions:
 
