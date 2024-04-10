@@ -10,6 +10,7 @@
 - As a STUDENT, I want to search for users, so that I can find my friends.
 - As a STUDENT, I want to see posts from users that I follow so that I can keep up with my friends.
 - As a STUDENT, I want to get information about other users so that I can view their profile.
+- As a STUDENT, I want to change my username if I regret my old username.
 
 # Exceptions:
 
