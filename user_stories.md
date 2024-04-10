@@ -25,5 +25,6 @@
 - If a STUDENT attempts to delete a post that doesn't exist, it will display an error message, stating that the post doesn't exist or has been deleted.
 - If a STUDENT attemps to change username to one that has been taken, error message will be returned stating that the username has been taken.
 - If a STUDENT, if I try to like or dislike a post more than once, the system will display a message indicating that my reaction has already been recorded, to prevent multiple reactions from the same user.
+- If a STUDENT, if I attempt to use a feature that is currently under maintenance or temporarily unavailable, I want to receive a notification about the downtime, including when the feature is expected to be available again.
 
 
