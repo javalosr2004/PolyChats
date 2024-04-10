@@ -8,3 +8,10 @@
 - As a STUDENT, I want to be able to delete my post, so that I can not regret my decisions.
 
 # Exceptions:
+
+- If a student enters a wrong username, it will display a message that an account with this username does not exists.
+- If a student enters the wrong pin it will alert of the error and ask them to try again.
+- If a student attempts to make an empty post, it will dipaly and error message and tell a post requires a body.
+
+
+
