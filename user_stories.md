@@ -6,6 +6,9 @@
 - As a STUDENT, I want to be able to commment on posts, so that others can see my sentiments on a post.
 - As a STUDENT, I want to view my past posts, so that I can reflect on my past feelings.
 - As a STUDENT, I want to be able to delete my post, so that I can not regret my decisions.
+- As a HOPELESS ROMANTIC STUDENT, I want to see messages from many different backgrounds so that I can find my future spouse.
+- As a LONELY STUDENT, I want to search for messages that align with my ideals, so that I can find friends.
+- As a STUDENT, I want to see posts from users that I follow so that I can keep up with my friends.
 
 # Exceptions:
 
