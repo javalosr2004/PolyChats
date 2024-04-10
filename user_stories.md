@@ -7,11 +7,11 @@
 - As a STUDENT, I want to view my past posts, so that I can reflect on my past feelings.
 - As a STUDENT, I want to be able to delete my post, so that I can not regret my decisions.
 - As a HOPELESS ROMANTIC STUDENT, I want to see messages from many different backgrounds so that I can find my future spouse.
-- As a STUDENT, I want to search for users, so that I can find my friends.
-- As a STUDENT, I want to see posts from users that I follow so that I can keep up with my friends.
-- As a STUDENT, I want to get information about other users so that I can view their profile.
-- As a STUDENT, I want to change my username if I regret my old username.
-- As a STUDENT, I want to edit my previous posts if I want to change my ideas.
+- As a POPULAR STUDENT, I want to search for users, so that I can find all my many friends.
+- As an INTROVERTED STUDENT, I want to see posts from users that I follow so that I can keep up with all my homies and no one else.
+- As a STALKING STUDENT, I want to get information about other users so that I can view their profile and see their follower count.
+- As an UNSURE STUDENT, I want to change my username if I regret my old username.
+- As an UNSURE STUDENT, I want to edit my previous posts if I want to change my ideas.
 - As a STUDENT, I want to be able to follow people, so that I can only view their posts and keep myself in a bubble.
 
 # Exceptions:
