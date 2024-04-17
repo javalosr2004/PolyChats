@@ -119,6 +119,28 @@ HTTP Response 404
 {
     "message": "string" /* Default value is "Post id was not found" */
 ```
+### 2.3. View a post - '/post/[post_id]' (GET)
+
+Views a post that already exists along with the comments, likes, and dislikes.
+
+Success
+```json
+{
+    "post_id": "string" /*,
+    "username": "string",
+    "post": "string",
+    "comments": "list",
+    "likes": "integer",
+    "dislikes": "integer"
+}
+```
+Failure: 
+
+HTTP Response 404
+```json
+{
+    "error_message": "string" /* Default value is "Post id was not found" */
+```
 
 ### 2.4. Create a comment - '/post/[post_id]/comment' (POST)
 
