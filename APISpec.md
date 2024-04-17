@@ -81,8 +81,7 @@ Success
     "post_id": "string" /* This id will be used to modify any regretfully made posts, or if one wants to always appear right */
 }
 ```
-Failure
-HTTP Response 401
+Failure: HTTP Response 401
 ```json
 {
     "error_message": "string" /* Default value is "Incorrect password use the one below" */
