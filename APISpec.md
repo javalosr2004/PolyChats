@@ -3,12 +3,10 @@
 ## 1. User Account Information
 
 The API calls are made in this sequence when making a purchase:
-1. `Get Catalog`
-2. `Customer Visits`
-3. `New Cart`
-4. `Add Item to Cart` (Can be called multiple times)
-5. `Checkout Cart`
-6. `Search Orders`
+1. `User Account Information`
+2. `Influencer Actions`
+3. `Regretful Actions`
+4. `Normie Actions` (For normal people)
 
 ### 1.1. Create user - `/user/` (POST)
 
@@ -56,28 +54,33 @@ __Failure__
 [HTTP Response: 418](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)
 ```json
 {
-    "error_message": "sting"
+    "error_message": "string"
 }
 ```
 
-### 1.3. New Cart - `/carts/` (POST)
+## 2. Influencer Actions
 
-Creates a new cart for a specific customer.
+### 2.1. Create a post - `/post/` (POST)
+
+Creates a new post given username and password.
 
 **Request**:
 
 ```json
 {
-  "customer_name": "string",
-  "character_class": "string",
-  "level": "number"
+  "username": "string",
+  "password": "string",
+  "post": "string"
 }
 ```
 
 **Response**:
-
+Success
 ```json
 {
-    "cart_id": "string" /* This id will be used for future calls to add items and checkout */
+    "post_id": "string" /* This id will be used to modify any regretfully made posts, or if one wants to always appear right */
 }
-``` 
+```
+Failure
+HTTP Reesponse 401
+## Regretful Actions
