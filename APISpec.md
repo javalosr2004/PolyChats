@@ -91,13 +91,19 @@ Failure: HTTP Response 401
 
 Edits a post that already exists, given that the owner is editing it.
 
-Success
+**Request**:
 ```json
 {
-    "post_id": "string" /*,
     "username": "string",
     "password": "string",
     "new_post" "string"
+}
+```
+**Response**:
+Success
+```json
+{
+    "message": "string"
 }
 ```
 Failure: 
@@ -105,13 +111,49 @@ Failure:
 HTTP Response 401
 ```json
 {
-    "error_message": "string" /* Default value is "Incorrect password or username" */
+    "message": "string" /* Default value is "Incorrect password or username" */
 ```
 
 HTTP Response 404
 ```json
 {
-    "error_message": "string" /* Default value is "Post id was not found" */
+    "message": "string" /* Default value is "Post id was not found" */
+```
+
+### 2.4. Create a comment - '/post/[post_id]/comment' (POST)
+
+Creates a comment for the current user "signed in".
+
+**Request**:
+```json
+{
+    "username": "string",
+    "password": "string",
+    "comment": "string"
+}
+```
+
+**Response**:
+
+Success
+```json
+{
+    "message": "string"
+}
+```
+
+Failure: 
+
+HTTP Response 401
+```json
+{
+    "message": "string" /* Default value is "Incorrect password or username" */
+```
+
+HTTP Response 404
+```json
+{
+    "message": "string" /* Default value is "Post id was not found" */
 ```
 
 
