@@ -126,7 +126,7 @@ Views a post that already exists along with the comments, likes, and dislikes.
 Success
 ```json
 {
-    "post_id": "string" /*,
+    "post_id": "string" ,
     "username": "string",
     "post": "string",
     "comments": "list",
