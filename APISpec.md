@@ -82,5 +82,11 @@ Success
 }
 ```
 Failure
-HTTP Reesponse 401
+HTTP Response 401
+```json
+{
+    "error_message": "string" /* Default value is "Incorrect password use the one below" */
+    "password": "string"
+```
 ## Regretful Actions
+
