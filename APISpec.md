@@ -4,9 +4,8 @@
 
 The API calls are made in this sequence when making a purchase:
 1. `User Account Information`
-2. `Influencer Actions`
+2. `Normie Actions`
 3. `Regretful Actions`
-4. `Normie Actions` (For normal people)
 
 ### 1.1. Create user - `/user/` (POST)
 
@@ -58,7 +57,7 @@ __Failure__
 }
 ```
 
-## 2. Influencer Actions
+## 2. Normie Actions
 
 ### 2.1. Create a post - `/post/` (POST)
 
@@ -87,5 +86,34 @@ Failure: HTTP Response 401
     "error_message": "string" /* Default value is "Incorrect password use the one below" */
     "password": "string"
 ```
+
+### 2.2. Edit a post - '/post/[post_id]' (PATCH)
+
+Edits a post that already exists, given that the owner is editing it.
+
+Success
+```json
+{
+    "post_id": "string" /*,
+    "username": "string",
+    "password": "string",
+    "new_post" "string"
+}
+```
+Failure: 
+
+HTTP Response 401
+```json
+{
+    "error_message": "string" /* Default value is "Incorrect password or username" */
+```
+
+HTTP Response 404
+```json
+{
+    "error_message": "string" /* Default value is "Post id was not found" */
+```
+
+
 ## Regretful Actions
 
