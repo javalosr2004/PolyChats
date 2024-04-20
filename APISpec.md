@@ -170,14 +170,52 @@ HTTP Response 401
 ```json
 {
     "message": "string" /* Default value is "Incorrect password or username" */
+}
+
 ```
 
 HTTP Response 404
 ```json
 {
     "message": "string" /* Default value is "Post id was not found" */
+}
 ```
 
+### 2.5. Follow a user - '/user/[user_id]/follow' (POST)
+
+**Request**:
+```json
+{
+    "username": "string",
+    "password": "string",
+    "follow_username": "string"
+}
+```
+**Response**:
+
+Success
+```json
+{
+    "message": "string"
+}
+```
+
+Failure: 
+
+HTTP Response 401
+```json
+{
+    "message": "string" /* Default value is "Incorrect password or username" */
+}
+
+```
+
+HTTP Response 404
+```json
+{
+    "message": "string" /* Default value is "Post id was not found" */
+}
+```
 
 ## Regretful Actions
 
@@ -215,4 +253,38 @@ HTTP Response 404
     "message": "string" /* Default value is "Post id was not found" */
 ```
 
+### 3.2. Unfollow a user - '/user/[user_id]/unfollow' (DELETE)
+
+**Request**:
+```json
+{
+    "username": "string",
+    "password": "string",
+    "follow_username": "string"
+}
+```
+**Response**:
+
+Success
+```json
+{
+    "message": "string"
+}
+```
+
+Failure: 
+
+HTTP Response 401
+```json
+{
+    "message": "string" /* Default value is "Incorrect password or username" */
+}
+
+```
+
+HTTP Response 404
+```json
+{
+    "message": "string" /* Default value is "Post id was not found" */
+}
 
