@@ -260,7 +260,42 @@ HTTP Response 404
 {
     "username": "string",
     "password": "string",
-    "follow_username": "string"
+    "unfollow_username": "string"
+}
+```
+**Response**:
+
+Success
+```json
+{
+    "message": "string"
+}
+```
+
+Failure: 
+
+HTTP Response 401
+```json
+{
+    "message": "string" /* Default value is "Incorrect password or username" */
+}
+
+
+
+HTTP Response 404
+```json
+{
+    "message": "string" /* Default value is "Post id was not found" */
+}
+```
+
+### 3.3. Delete a post - '/post/[post_id]/delete-post' (DELETE)
+
+**Request**:
+```json
+{
+    "username": "string",
+    "password": "string",
 }
 ```
 **Response**:
@@ -287,4 +322,5 @@ HTTP Response 404
 {
     "message": "string" /* Default value is "Post id was not found" */
 }
+
 
