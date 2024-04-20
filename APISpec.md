@@ -181,3 +181,38 @@ HTTP Response 404
 
 ## Regretful Actions
 
+### 3.1. Delete a comment - `/post/[post_id]/comment/[comment_id]` (DELETE)
+
+Allows a user to delete a comment they made on a post.
+
+**Request**:
+```json
+{
+    "username": "string",
+    "password": "string"
+}
+
+**Response**:
+
+Success
+```json
+{
+    "message": "string"
+}
+```
+
+Failure: 
+
+HTTP Response 401
+```json
+{
+    "message": "string" /* Default value is "Incorrect password or username" */
+```
+
+HTTP Response 404
+```json
+{
+    "message": "string" /* Default value is "Post id was not found" */
+```
+
+
