@@ -289,7 +289,7 @@ HTTP Response 404
 }
 ```
 
-### 3.3. Delete a post - '/post/[post_id]/delete-post' (DELETE)
+### 3.3. Delete a post - '/post/[post_id]' (DELETE)
 
 **Request**:
 ```json
