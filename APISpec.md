@@ -10,7 +10,6 @@ The API calls are made in this sequence when making a purchase:
 ### 1.1. Create user - `/user/` (POST)
 
 Creates a user, given a unique username and password. On success returns the username.
-Retrieves the catalog of items. Each unique item combination should have only a single price. You can have at most 6 potion SKUs offered in your catalog at one time.
 
 **Request**:
 ```json
@@ -29,7 +28,7 @@ Retrieves the catalog of items. Each unique item combination should have only a 
 }
 ```
 
-### 1.2. Change username - `/user/change-password` (PATCH)
+### 1.2. Change username - `/user/change-username` (PATCH)
 
 Changes the username of a given user, and returns new username or returns error if username has already been taken.
 
