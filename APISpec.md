@@ -122,6 +122,7 @@ HTTP Response 404
 ### 2.3. View a post - '/post/[post_id]' (GET)
 
 Views a post that already exists along with the comments, likes, and dislikes.
+**Request**:
 
 Success
 ```json
@@ -134,6 +135,14 @@ Success
     "dislikes": "integer"
 }
 ```
+
+**Response**:
+Success
+```json
+{
+    "message": "string" /* Default value is "OK" */
+```
+
 Failure: 
 
 HTTP Response 404
