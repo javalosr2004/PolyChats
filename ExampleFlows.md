@@ -6,13 +6,13 @@ Timmy is a Computer Science student who is looking to make some friends and meet
 
 Now that Timmy made an account and posted a message to other users, he can expand his friend group and meet new people.
 
-## Ivan is an indecisive student that 
+## Ivan the Indecisive
 
-    Ivan creates a new user account by calling POST /user/ with his name, username, and password. Unfortanatey that username was taken and he spends an hour thinking of a new one.
-    He creates a new post by calling POST /post/ with his username, password, and a lengthy post about his favorite programming language.
-    Seconds later, Ivan changes his mind and decides to edit his post by calling PATCH /post/[post_id] with his username, password, and updated content. He does this 17 more times in the span of 5 minutes.
-    Ivan notices a witty comment on his post and decides to follow the user by calling POST /user/[user_id]/follow. However, he immediately regrets his decision and unfollows the user by calling DELETE /user/[user_id]/unfollow.
-    Finally, Ivan deletes his post altogether by calling DELETE /post/[post_id], only to create a new post moments later asking for opinions on his favorite programming language.
+- Ivan creates a new user account by calling POST /user/ with his name, username, and password. Unfortanatey that username was taken and he spends an hour thinking of a new one.
+- He creates a new post by calling POST /post/ with his username, password, and a lengthy post about his favorite programming language.
+- Seconds later, Ivan changes his mind and decides to edit his post by calling PATCH /post/[post_id] with his username, password, and updated content. He does this 17 more times in the span of 5 minutes.
+- Ivan notices a funny comment on his post and decides to follow the user by calling POST /user/[user_id]/follow. However, he immediately regrets his decision and unfollows the user by calling DELETE /user/[user_id]/unfollow.
+- Finally, Ivan deletes his post after much time thinking, by calling DELETE /post/[post_id], only to create a new post moments later asking for opinions on his favorite programming language.
 
 User Flow 2: Perfectionist Polly
 
