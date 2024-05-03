@@ -1,59 +1,12 @@
-from fastapi import FastAPI, exceptions
-from fastapi.responses import JSONResponse
-from pydantic import ValidationError
-import json
-import logging
-import sys
-from src.api import user
-from starlette.middleware.cors import CORSMiddleware
 from typing import Annotated, Union
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
-
-description = """
-Todo...
-"""
-
-app = FastAPI(
-    title="PolyChats",
-    description=description,
-    version="0.0.1",
-    terms_of_service="http://example.com/terms/",
-    contact={
-        "name": "Jesus Angel Avalos-Regalado",
-        "email": "javalosr@calpoly.edu",
-    },
+router = APIRouter(
+    prefix="/example",
+    tags=["example"],
 )
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_methods=["GET", "OPTIONS"],
-    allow_headers=["*"],
-)
-
-# include routes
-app.include_router(user.router)
-
-
-@app.exception_handler(exceptions.RequestValidationError)
-@app.exception_handler(ValidationError)
-async def validation_exception_handler(request, exc):
-    logging.error(f"The client sent invalid data!: {exc}")
-    exc_json = json.loads(exc.json())
-    response = {"message": [], "data": None}
-    for error in exc_json:
-        response['message'].append(f"{error['loc']}: {error['msg']}")
-
-    return JSONResponse(response, status_code=422)
-
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to [poly]Chats."}
-
 
 fake_users_db = {
     "johndoe": {
@@ -125,7 +78,7 @@ async def get_current_active_user(
     return current_user
 
 
-@app.post("/token")
+@router.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user_dict = fake_users_db.get(form_data.username)
     print(form_data.username)
@@ -141,7 +94,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     return {"access_token": user.username, "token_type": "bearer"}
 
 
-@app.get("/users/me")
+@router.get("/users/me")
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
