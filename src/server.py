@@ -12,7 +12,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from src import database as db
 import sqlalchemy
-
+from src import models
 
 description = """
 Todo...
@@ -37,7 +37,6 @@ app.add_middleware(
 )
 
 # include routes
-app.include_router(user.router)
 
 
 @app.exception_handler(exceptions.RequestValidationError)
@@ -80,8 +79,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class User(BaseModel):
     username: str
-    full_name: Union[str, None] = None
-    disabled: Union[bool,  None] = None
+    first_name: Union[str, None] = None
+    last_name: Union[str, None] = None
 
 
 def fake_hash_password(password: str):
@@ -92,7 +91,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 class UserInDB(User):
-    hashed_password: str
+    password: str
 
 
 def get_user(db, username: str):
@@ -104,7 +103,14 @@ def get_user(db, username: str):
 def fake_decode_token(token):
     # This doesn't provide any security at all
     # Check the next version
-    user = get_user(fake_users_db, token)
+    user = None
+    with db.engine.begin() as connection:
+        res = connection.execute(sqlalchemy.select(
+            models.user_table).where(models.user_table.c.username == token))
+        user = res.mappings().first()
+        if (user):
+            user = UserInDB(**user)
+
     return user
 
 
@@ -122,8 +128,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
+
     return current_user
 
 
@@ -131,8 +136,10 @@ async def get_current_active_user(
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = None
     with db.engine.begin() as connection:
-        res = connection.execute(sqlalchemy.text("SELECT username, password FROM Users" +
-                                                 "WHERE username = :username"))
+        stmt = sqlalchemy.select(
+            models.user_table.c.username, models.user_table.c.password)
+        stmt = stmt.where(models.user_table.c.username == form_data.username)
+        res = connection.execute(stmt)
         user = res.first()
 
     # user_dict = fake_users_db.get(form_data.username)
