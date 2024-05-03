@@ -10,6 +10,8 @@ from typing import Annotated, Union
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
+from src import database as db
+import sqlalchemy
 
 
 description = """
@@ -127,14 +129,20 @@ async def get_current_active_user(
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user_dict = fake_users_db.get(form_data.username)
+    user = None
+    with db.engine.begin() as connection:
+        res = connection.execute(sqlalchemy.text("SELECT username, password FROM Users" +
+                                                 "WHERE username = :username"))
+        user = res.first()
+
+    # user_dict = fake_users_db.get(form_data.username)
     print(form_data.username)
-    if not user_dict:
+    if not user:
         raise HTTPException(
             status_code=400, detail="Incorrect username or password")
-    user = UserInDB(**user_dict)
-    hashed_password = fake_hash_password(form_data.password)
-    if not hashed_password == user.hashed_password:
+    # user = UserInDB(**user_dict)
+    # hashed_password = fake_hash_password(form_data.password)
+    if not form_data.password == user[1]:
         raise HTTPException(
             status_code=400, detail="Incorrect username or password")
 
