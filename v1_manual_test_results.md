@@ -7,7 +7,7 @@ Timmy is a Computer Science student who is looking to make some friends and meet
 
 Now that Timmy made an account and posted a message to other users, he can expand his friend group and meet new people.
 
-# Testing Results
+## Testing Results
 
 1. Curl statment called for signing in. This endpoint is defined under /token - login
 
