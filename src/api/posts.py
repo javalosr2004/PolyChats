@@ -42,7 +42,7 @@ async def create_post(token: Annotated[str, Depends(get_token)], post: str):
     return {"post_id": post_id}
 
 @router.post("/delete/{post_id}")
-async def delete_post(token: Annotated[str, Depends(get_token)], post_id: str):
+async def delete_post(token: Annotated[str, Depends(get_token)], post_id: int):
     user = token
 
     if not user:
@@ -54,15 +54,22 @@ async def delete_post(token: Annotated[str, Depends(get_token)], post_id: str):
     
     # delete a post by id
     with db.engine.begin() as connection:
-        stmt = sqlalchemy.delete(models.post_table).where(models.post_table.id == post_id)
+        posts = models.post_table
+        stmt = sqlalchemy.delete(posts).where(posts.c.post_id == post_id)
         try:
-            connection.execute(stmt)
+            result = connection.execute(stmt)
+
+            if result.rowcount == 0:
+                raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Post not found."
+            )
 
         except Exception as E:
             print(E)
             return HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Unable to create post."
+                detail="Unable to delete post"
             )
 
     return {"message": "Post deleted successfully", "post_id": post_id}
