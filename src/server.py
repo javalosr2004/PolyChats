@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from src import database as db
 import sqlalchemy
 from src import models
+from src.forms.creation import OAuth2Creation
 
 description = """
 Todo...
@@ -154,6 +155,33 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
             status_code=400, detail="Incorrect username or password")
 
     return {"access_token": user.username, "token_type": "bearer"}
+
+
+@app.post("/users/create")
+async def create_account(first_name: str, last_name: str, username: str, password: str):
+    # check if username is taken.
+    user = None
+    with db.engine.begin() as connection:
+        stmt = sqlalchemy.select(
+            sqlalchemy.func.count())
+        stmt = stmt.where(models.user_table.c.username == username)
+        res = connection.execute(stmt)
+        user = res.scalar_one_or_none()
+        print(user)
+        if (not user):
+            # create user with set password
+            stmt = sqlalchemy.insert(models.user_table).values({
+                "first_name": first_name,
+                "last_name": last_name,
+                "username": username,
+                "password": password
+            })
+            connection.execute(stmt)
+        else:
+            raise HTTPException(
+                status_code=400, detail="Username already taken. Choose another.")
+
+    return "Account created succesfully!"
 
 
 @app.get("/users/me")
