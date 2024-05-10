@@ -5,7 +5,7 @@ import json
 import logging
 from starlette.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-from src.api import posts, auth
+from src.api import posts, auth, comments
 
 description = """
 Todo...
@@ -32,6 +32,7 @@ app.add_middleware(
 # include routes
 app.include_router(posts.router)
 app.include_router(auth.router)
+app.include_router(comments.router)
 
 
 @app.exception_handler(exceptions.RequestValidationError)

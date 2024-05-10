@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 import sqlalchemy
 from src import database as db, models
 from sqlalchemy import func
@@ -7,36 +6,38 @@ from src.api.auth import get_token
 from typing import Annotated
 
 router = APIRouter(
-    prefix="/posts",
-    tags=["posts"],
-    dependencies=[Depends(get_token)],
+    prefix="/comments",
+    tags=["comments"],
+    dependencies=[Depends(get_token)]
 )
 
-@router.post("/create")
-async def create_post(token: Annotated[str, Depends(get_token)], post: str):
+router.post("/create")
+async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int ,content: str):
     user = token
-    post_id = None
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # creates a post with associated user id
+    
     with db.engine.begin() as connection:
-        stmt = sqlalchemy.insert(models.post_table).values({
-            "username": user,
-            "post": post
+        postComment = sqlalchemy.insert(models.comment_table).values({
+           "username": user,
+           "post_id":  post_id,
+           "content": content
         })
+
         try:
-            res = connection.execute(stmt)
-            post_id = res.inserted_primary_key[0]
+         response = connection.execute(postComment)
+         comment_id = response.inserted_primary_key[0]
 
         except Exception as E:
             print(E)
             return HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Unable to create post."
+                detail="Unable to create comment."
             )
 
-    return {"post_id": post_id}
+    return {"comment_id": comment_id}

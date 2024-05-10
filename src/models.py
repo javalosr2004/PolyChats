@@ -7,7 +7,7 @@ user_table = sqlalchemy.Table("User", user_table_metadata, autoload_with=databas
 
 # SQL table for Comment
 comment_table_metadata = sqlalchemy.MetaData()
-comment_table = sqlalchemy.Table("Comment", comment_table_metadata , autoload_with=database.engine)
+comment_table = sqlalchemy.Table("Comments", comment_table_metadata , autoload_with=database.engine)
 
 # SQL table for Posts
 posts_table_metadata = sqlalchemy.MetaData()
