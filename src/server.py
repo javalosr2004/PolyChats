@@ -22,7 +22,6 @@ app = FastAPI(
     },
 )
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_methods=["GET", "OPTIONS"],
@@ -33,7 +32,6 @@ app.add_middleware(
 app.include_router(posts.router)
 app.include_router(auth.router)
 app.include_router(comments.router)
-
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)

@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 router.post("/create")
-async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int ,content: str):
+async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int, content: str):
     user = token
 
     if not user:
@@ -23,14 +23,14 @@ async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int
         )
     
     with db.engine.begin() as connection:
-        postComment = sqlalchemy.insert(models.comment_table).values({
+        stmt = sqlalchemy.insert(models.comment_table).values({
            "username": user,
            "post_id":  post_id,
            "content": content
         })
 
         try:
-         response = connection.execute(postComment)
+         response = connection.execute(stmt)
          comment_id = response.inserted_primary_key[0]
 
         except Exception as E:
