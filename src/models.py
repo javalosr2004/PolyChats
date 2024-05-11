@@ -14,5 +14,5 @@ posts_table_metadata = sqlalchemy.MetaData()
 post_table = sqlalchemy.Table("Posts", posts_table_metadata, autoload_with=database.engine)
 
 # SQL table for Followers
-message_table_metadata = sqlalchemy.MetaData()
-message_table = sqlalchemy.Table("Followers", message_table_metadata, autoload_with=database.engine)
+followers_table_metadata = sqlalchemy.MetaData()
+followers_table = sqlalchemy.Table("Followers", followers_table_metadata, autoload_with=database.engine)
