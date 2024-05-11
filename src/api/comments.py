@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 import sqlalchemy
 from src import database as db, models
 from sqlalchemy import func
@@ -11,7 +12,7 @@ router = APIRouter(
     dependencies=[Depends(get_token)]
 )
 
-router.post("/create")
+@router.post("/create")
 async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int, content: str):
     user = token
 
@@ -39,5 +40,4 @@ async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to create comment."
             )
-
-    return {"comment_id": comment_id}
+    return {"message": "Comment added successfully ", "comment_id": comment_id}
