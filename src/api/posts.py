@@ -41,7 +41,7 @@ def return_next_page(line_count: int, cur_page: int):
 
 
 @router.get("/")
-async def view_posts(token: Annotated[str, Depends(get_token)], id: int = -1, page: int = 1):
+async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
     user = token
     if not user:
         raise HTTPException(
@@ -49,26 +49,10 @@ async def view_posts(token: Annotated[str, Depends(get_token)], id: int = -1, pa
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    if (id >= 0 and page > 1):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid request. Id's do not have pages."
-        )
     if page < 1:
         page = 1
     # returns the 10 most recent posts
     with db.engine.begin() as connection:
-        # attempt to find post with given id
-        if id >= 0:
-            stmt = sqlalchemy.select(models.post_table).where(
-                models.post_table.c.post_id == id)
-            post = connection.execute(stmt).mappings().one_or_none()
-            if not post:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid request. Id not does exist."
-                )
-            return post
 
         stmt = sqlalchemy.select(
             sqlalchemy.func.count()).select_from(models.post_table)
@@ -85,6 +69,29 @@ async def view_posts(token: Annotated[str, Depends(get_token)], id: int = -1, pa
             "next": return_next_page(pages_available, page),
             "posts": posts
         }
+
+
+@router.get("/{id}")
+async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
+    user = token
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    with db.engine.begin() as connection:
+        # attempt to find post with given id
+        if id >= 0:
+            stmt = sqlalchemy.select(models.post_table).where(
+                models.post_table.c.post_id == id)
+            post = connection.execute(stmt).mappings().one_or_none()
+            if not post:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid request. Id not does exist."
+                )
+            return post
 
 
 @ router.post("/create")
