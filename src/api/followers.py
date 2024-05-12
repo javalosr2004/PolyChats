@@ -7,12 +7,13 @@ from src.api.auth import get_token
 from typing import Annotated
 
 router = APIRouter(
-    prefix="/followers",
-    tags=["followers"],
+    prefix="/follow",
+    tags=["follow"],
     dependencies=[Depends(get_token)]
 )
 
-@router.post("/follow/{username}")
+
+@router.post("/{username}")
 async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
     user = token
 
@@ -22,13 +23,14 @@ async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # follow a user by their id
     with db.engine.begin() as connection:
         users = models.user_table
         followers = models.followers_table
 
-        find_user_stmt = sqlalchemy.select(users).where(users.c.username == username)
+        find_user_stmt = sqlalchemy.select(
+            users).where(users.c.username == username)
         insert_follow_stmt = sqlalchemy.insert(followers).values({
             "username": username,
             "follower": user
@@ -38,9 +40,9 @@ async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
 
             if user_result.rowcount == 0:
                 raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found."
-            )
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found."
+                )
 
             connection.execute(insert_follow_stmt)
         except Exception as E:
