@@ -77,8 +77,8 @@ async def view_posts(token: Annotated[str, Depends(get_token)], id: int = -1, pa
 
         if (pages_available - ((page - 1) * 10)) < 0:
             return {"prev": pages_available + 1, "next": "", "posts": []}
-        stmt = sqlalchemy.select(models.post_table).order_by(
-            models.post_table.c.date).offset((page-1) * 10).limit(10)
+        stmt = sqlalchemy.select(models.post_table).offset((page-1) * 10).limit(10).order_by(
+            models.post_table.c.date.desc())
         posts = connection.execute(stmt).mappings().all()
         return {
             "prev": return_previous_page(pages_available, page),
