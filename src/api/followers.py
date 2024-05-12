@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 @router.post("/follow/{username}")
-async def create_comment(token: Annotated[str, Depends(get_token)], username: str):
+async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
     user = token
 
     if not user:
