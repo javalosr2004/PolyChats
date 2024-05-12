@@ -123,12 +123,8 @@ async def create_post(token: Annotated[str, Depends(get_token)], post: str):
 
     return {"post_id": post_id}
 
-<<<<<<< HEAD
-@router.delete("/delete/{post_id}")
-=======
 
-@ router.post("/delete/{post_id}")
->>>>>>> 8f26140396d69ccf5b81cf44af58df980e6c4689
+@router.delete("/delete/{post_id}")
 async def delete_post(token: Annotated[str, Depends(get_token)], post_id: int):
     user = token
 
