@@ -13,8 +13,8 @@ router = APIRouter(
 )
 
 
-@router.post("/{username}")
-async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
+@router.post("/{user_id}")
+async def follow_user(token: Annotated[str, Depends(get_token)], user_id: int):
     user = token
 
     if not user:
@@ -30,9 +30,9 @@ async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
         followers = models.followers_table
 
         find_user_stmt = sqlalchemy.select(
-            users).where(users.c.username == username)
+            users).where(users.c.id == user_id)
         insert_follow_stmt = sqlalchemy.insert(followers).values({
-            "username": username,
+            "user_id": user_id,
             "follower": user
         })
         try:
@@ -54,8 +54,8 @@ async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
     return {"message": "Followed Succesfully"}
 
 
-@router.delete("/unfollow/{username}")
-async def unfollow_user(token: Annotated[str, Depends(get_token)], username: str):
+@router.delete("/unfollow/{user_id}")
+async def unfollow_user(token: Annotated[str, Depends(get_token)], user_id: int):
     user = token
 
     if not user:
@@ -70,8 +70,8 @@ async def unfollow_user(token: Annotated[str, Depends(get_token)], username: str
         users = models.user_table
         followers = models.followers_table
 
-        find_user_stmt = sqlalchemy.select(users).where(users.c.username == username)
-        unfollow_stmt = sqlalchemy.delete(followers).where(followers.c.follower == user).where(followers.c.username == username)
+        find_user_stmt = sqlalchemy.select(users).where(users.c.id == user_id)
+        unfollow_stmt = sqlalchemy.delete(followers).where(followers.c.follower == user).where(followers.c.user_id == user_id)
         try:
             user_result = connection.execute(find_user_stmt)
 
