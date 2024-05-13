@@ -14,9 +14,9 @@ router = APIRouter(
 
 @router.post("/create")
 async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int, content: str):
-    user = token
+    username = token
 
-    if not user:
+    if not username:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
@@ -24,23 +24,39 @@ async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int
         )
     
     with db.engine.begin() as connection:
-        stmt = sqlalchemy.insert(models.comment_table).values({
-           "username": user,
-           "post_id":  post_id,
-           "content": content
-        })
+        users = models.user_table
+
+        # Fetch the user_id based on the username
+        find_username_stmt = sqlalchemy.select(users.c.id).where(users.c.username == username)
 
         try:
-         response = connection.execute(stmt)
-         comment_id = response.inserted_primary_key[0]
+            user_result = connection.execute(find_username_stmt)
+            user_id = user_result.scalar()
 
-        except Exception as E:
-            print(E)
-            return HTTPException(
+            if user_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found."
+                )
+
+            # Insert the comment with the fetched user_id
+            new_comment_stmt = sqlalchemy.insert(models.comment_table).values({
+                "user_id": user_id,
+                "post_id": post_id,
+                "content": content
+            })
+
+            response = connection.execute(new_comment_stmt)
+            comment_id = response.inserted_primary_key[0]
+
+        except Exception as e:
+            print(e)
+            raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to create comment."
             )
-    return {"message": "Comment added successfully ", "comment_id": comment_id}
+    
+    return {"message": "Comment added successfully", "comment_id": comment_id}
 
 @router.delete("/delete/{comment_id}")
 async def delete_comment(token: Annotated[str, Depends(get_token)], comment_id: int):
