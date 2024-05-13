@@ -96,22 +96,37 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
 
 @ router.post("/create")
 async def create_post(token: Annotated[str, Depends(get_token)], post: str):
-    user = token
+    username = token
     post_id = None
-    if not user:
+    if not username:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # creates a post with associated user id
+    
+   # Fetch the user_id based on the username
+    users = models.user_table
+    find_username_stmt = sqlalchemy.select(users.c.id).where(users.c.username == username)
+
+    # Creates a post with associated user id
     with db.engine.begin() as connection:
-        stmt = sqlalchemy.insert(models.post_table).values({
-            "username": user,
+
+        user_result = connection.execute(find_username_stmt)
+        user_id = user_result.scalar()
+
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found."
+            )
+
+        insert_post_stmt = sqlalchemy.insert(models.post_table).values({
+            "user_id": user_id,
             "post": post
         })
         try:
-            res = connection.execute(stmt)
+            res = connection.execute(insert_post_stmt)
             post_id = res.inserted_primary_key[0]
 
         except Exception as E:
