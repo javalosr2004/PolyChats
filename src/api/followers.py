@@ -30,19 +30,23 @@ async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
         followers = models.followers_table
 
         find_user_stmt = sqlalchemy.select(
-            users).where(users.c.username == username)
-        insert_follow_stmt = sqlalchemy.insert(followers).values({
-            "username": username,
-            "follower": user
-        })
+            users.c.id).where(users.c.username == username)
+        find_follower_stmt = sqlalchemy.select(
+            users.c.id).where(users.c.username == user)
         try:
-            user_result = connection.execute(find_user_stmt)
-
-            if user_result.rowcount == 0:
+            user_id = connection.execute(find_user_stmt).scalar_one_or_none()
+            follower_id = connection.execute(
+                find_follower_stmt).scalar_one_or_none()
+            if not user_id:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="User not found."
                 )
+
+            insert_follow_stmt = sqlalchemy.insert(followers).values({
+                "user_id": user_id,
+                "follower_id": follower_id
+            })
 
             connection.execute(insert_follow_stmt)
         except Exception as E:
@@ -71,18 +75,23 @@ async def unfollow_user(token: Annotated[str, Depends(get_token)], username: str
         followers = models.followers_table
 
         find_user_stmt = sqlalchemy.select(
-            users).where(users.c.username == username)
-        unfollow_stmt = sqlalchemy.delete(followers).where(
-            followers.c.follower == user).where(followers.c.username == username)
-        try:
-            user_result = connection.execute(find_user_stmt)
+            users.c.id).where(users.c.username == username)
+        find_follower_stmt = sqlalchemy.select(
+            users.c.id).where(users.c.username == user)
 
-            if user_result.rowcount == 0:
+        try:
+            user_id = connection.execute(find_user_stmt).scalar_one_or_none()
+            follower_id = connection.execute(
+                find_follower_stmt).scalar_one_or_none()
+
+            if not user_id:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="User not found."
                 )
 
+            unfollow_stmt = sqlalchemy.delete(followers).where(
+                followers.c.follower_id == follower_id and followers.c.user_id == user_id)
             unfollow_result = connection.execute(unfollow_stmt)
 
             if unfollow_result.rowcount == 0:
