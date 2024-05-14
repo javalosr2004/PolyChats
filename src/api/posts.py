@@ -150,12 +150,51 @@ async def delete_post(token: Annotated[str, Depends(get_token)], post_id: int):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # delete a post by id
+    # retrieve the user_id from the users table using the username
+    with db.engine.begin() as connection:
+        users = models.user_table
+        stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
+        user_result = connection.execute(stmt).fetchone()
+
+        if not user_result:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user_id = user_result.id
+
+    # retrieve the user_id from the post table for the given post_id
     with db.engine.begin() as connection:
         posts = models.post_table
-        stmt = sqlalchemy.delete(posts).where(posts.c.post_id == post_id)
+        stmt = sqlalchemy.select(posts.c.user_id).where(posts.c.post_id == post_id)
+        post_result = connection.execute(stmt).fetchone()
+
+        if not post_result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Post not found."
+            )
+
+        post_user_id = post_result.user_id
+
+        # check if the user_id matches
+        if user_id != post_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to delete this post."
+            )
+
+    # deleting the comments and the post
+    with db.engine.begin() as connection:
+        comments = models.comment_table
+        delete_comments_stmt = sqlalchemy.delete(comments).where(comments.c.post_id == post_id)
+        connection.execute(delete_comments_stmt)
+
+        delete_post_stmt = sqlalchemy.delete(posts).where(posts.c.post_id == post_id)
         try:
-            result = connection.execute(stmt)
+            result = connection.execute(delete_post_stmt)
 
             if result.rowcount == 0:
                 raise HTTPException(
@@ -165,12 +204,12 @@ async def delete_post(token: Annotated[str, Depends(get_token)], post_id: int):
 
         except Exception as E:
             print(E)
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to delete post"
             )
 
-    return {"message": "Post deleted successfully", "post_id": post_id}
+    return {"message": "Post and associated comments deleted successfully", "post_id": post_id}
 
 @router.patch("/update/{post_id}")
 async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, new_post: str):
