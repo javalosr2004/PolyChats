@@ -80,7 +80,10 @@ Ivan changes his mind and decides to edit his post by calling `PATCH /post/updat
 **Curl Command:**
 
 ```bash
-
+curl -X 'PATCH' \
+  'http://13.52.181.106:3000/posts/update/24?new_post=not%20nice' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer jesus1'
 ```
 
 **Response:**
@@ -140,7 +143,7 @@ Finally, Ivan deletes his post after much time thinking, by calling `DELETE /pos
 
 ```bash
 curl -X 'DELETE' \
-  'http://13.52.181.106:3000/posts/delete/23' \
+  'http://13.52.181.106:3000/posts/delete/24' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer jesus1'
 ```
@@ -150,7 +153,7 @@ curl -X 'DELETE' \
 ```json
 {
     "message": "Post deleted successfully",
-    "post_id": 23
+    "post_id": 24
 }
 ```
 
@@ -272,11 +275,11 @@ curl -X 'POST' \
 
 3. ## Perfectionist Polly
 
-- Polly creates a new user account by calling POST /user/ with her name, desired username, and password.
-- She spends hours crafting the perfect post about her latest coding project, only to realize she made a typo in her username. Polly calls PATCH /user/change-username to update her username.
-- Polly finally posts her masterpiece by calling POST /post/ with her new username, password, and post content.
-- She obsessively refreshes the post page by calling GET /post/[post_id] every 30 seconds to check for likes and comments.
-- Upon receiving a comment suggesting a minor improvement to her code, Polly hastily deletes her post by calling DELETE /post/[post_id] and retreats to her coding cave to refactor her entire project.
+-   Polly creates a new user account by calling POST /user/ with her name, desired username, and password.
+-   She spends hours crafting the perfect post about her latest coding project, only to realize she made a typo in her username. Polly calls PATCH /user/change-username to update her username.
+-   Polly finally posts her masterpiece by calling POST /post/ with her new username, password, and post content.
+-   She obsessively refreshes the post page by calling GET /post/[post_id] every 30 seconds to check for likes and comments.
+-   Upon receiving a comment suggesting a minor improvement to her code, Polly hastily deletes her post by calling DELETE /post/[post_id] and retreats to her coding cave to refactor her entire project.
 
 # Testing results
 
@@ -289,13 +292,14 @@ curl -X 'POST' \
   'http://127.0.0.1:8000/auth/users/create?first_name=Polly&last_name=P&username=polly_cool_person&password=pass' \
   -H 'accept: application/json' \
   -d ''
-  ```
+```
 
 **Response:**
 
 ```json
 { "Account created succesfully!" }
 ```
+
 2. Patch Username
 
 **Curl Command:**
@@ -341,16 +345,17 @@ curl -X 'GET' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer polly_cool'
 ```
+
 **Response:**
 
 ```json
 {
-  "post_id": 22,
-  "date": "2024-05-14T03:17:21.790557+00:00",
-  "user_id": 7,
-  "post": "This my masterful post",
-  "likes": 0,
-  "dislikes": 0
+    "post_id": 22,
+    "date": "2024-05-14T03:17:21.790557+00:00",
+    "user_id": 7,
+    "post": "This my masterful post",
+    "likes": 0,
+    "dislikes": 0
 }
 ```
 
@@ -368,8 +373,8 @@ curl -X 'DELETE' \
 **Response:**
 
 ```json
- {
-  "message": "Post deleted successfully",
-  "post_id": 22
+{
+    "message": "Post deleted successfully",
+    "post_id": 22
 }
 ```
