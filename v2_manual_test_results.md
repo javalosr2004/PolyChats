@@ -1,4 +1,3 @@
-
 Timmy is a Computer Science student who is looking to make some friends and meet some new people. He recently heard of a new social media called poly chats. Timmy wants to make an account on PolyChats so he can make some new friends that also study Comptuer Sceince.
 
 -   To begin he must call POST /users/ and make a username and password
@@ -98,20 +97,17 @@ Ivan notices a funny comment on his post and decides to follow the user by calli
 
 ```bash
 curl -X 'POST' \
-  'http://13.52.181.106:3000/user/67890/follow' \
+  'http://13.52.181.106:3000/follow/jesus' \
   -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "username": "ivan",
-    "password": "securepassword123"
-  }'
+  -H 'Authorization: Bearer jesus1' \
+  -d ''
 ```
 
 **Response:**
 
 ```json
 {
-    "message": "User followed successfully."
+    "message": "Followed Succesfully"
 }
 ```
 
@@ -123,20 +119,16 @@ Ivan immediately regrets his decision and unfollows the user by calling `DELETE 
 
 ```bash
 curl -X 'DELETE' \
-  'http://13.52.181.106:3000/user/67890/unfollow' \
+  'http://13.52.181.106:3000/unfollow/jesus' \
   -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "username": "ivan",
-    "password": "securepassword123"
-  }'
+  -H 'Authorization: Bearer jesus1'
 ```
 
 **Response:**
 
 ```json
 {
-    "message": "User unfollowed successfully."
+    "message": "Unfollowed Succesfully"
 }
 ```
 
@@ -148,20 +140,17 @@ Finally, Ivan deletes his post after much time thinking, by calling `DELETE /pos
 
 ```bash
 curl -X 'DELETE' \
-  'http://13.52.181.106:3000/post/12345' \
+  'http://13.52.181.106:3000/posts/delete/23' \
   -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "username": "ivan",
-    "password": "securepassword123"
-  }'
+  -H 'Authorization: Bearer jesus1'
 ```
 
 **Response:**
 
 ```json
 {
-    "message": "Post deleted successfully."
+    "message": "Post deleted successfully",
+    "post_id": 23
 }
 ```
 
@@ -173,36 +162,33 @@ Moments later, Ivan creates a new post asking for opinions on his favorite progr
 
 ```bash
 curl -X 'POST' \
-  'http://13.52.181.106:3000/post/' \
+  'http://13.52.181.106:3000/posts/create?post=I%20love%20testing%20apis.' \
   -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "username": "ivan",
-    "password": "securepassword123",
-    "content": "What do you all think about Python vs. JavaScript?"
-  }'
+  -H 'Authorization: Bearer jesus1' \
+  -d ''
 ```
 
 **Response:**
 
 ```json
 {
-    "post_id": "67890",
-    "message": "Post created successfully."
+    "post_id": 26
 }
 ```
 
 These placeholders can be filled in with specific details as needed.
 
 ## Hopeless Romantic Holly
+
 Holly made an account on Poly Chats after struggling to find the one. She knows there is someone out there for her and she believes they are on Poly Chats. She wants to make a post to help her find a boyfriend.
-- She starts by making a new post with some info about herself by calling POST /post/ with her username and password.
-- After some time, she views her post by calling GET /post/[post_id] with her post id and sees that she recieved a comment.
-- Then she continues having a conversation with this user by calling POST /post/[post_id]/comment to respond to them.
-- After talking, she follows this user by calling POST /user/[user_id]/follow.
+
+-   She starts by making a new post with some info about herself by calling POST /post/ with her username and password.
+-   After some time, she views her post by calling GET /post/[post_id] with her post id and sees that she recieved a comment.
+-   Then she continues having a conversation with this user by calling POST /post/[post_id]/comment to respond to them.
+-   After talking, she follows this user by calling POST /user/[user_id]/follow.
 
 1. Make a new post by calling POST /post/create with her post contents.
-   
+
 **Curl Command:**
 
 ```bash
@@ -217,7 +203,7 @@ curl -X 'POST' \
 
 ```json
 {
-  "post_id": 25
+    "post_id": 25
 }
 ```
 
@@ -236,12 +222,12 @@ curl -X 'GET' \
 
 ```json
 {
-  "post_id": 25,
-  "date": "2024-05-14T04:21:07.731504+00:00",
-  "user_id": 8,
-  "post": "Hello everyone! I'm Holly and I am looking for the one.",
-  "likes": 0,
-  "dislikes": 0
+    "post_id": 25,
+    "date": "2024-05-14T04:21:07.731504+00:00",
+    "user_id": 8,
+    "post": "Hello everyone! I'm Holly and I am looking for the one.",
+    "likes": 0,
+    "dislikes": 0
 }
 ```
 
@@ -261,8 +247,8 @@ curl -X 'POST' \
 
 ```json
 {
-  "message": "Comment added successfully",
-  "comment_id": 10
+    "message": "Comment added successfully",
+    "comment_id": 10
 }
 ```
 
@@ -282,6 +268,6 @@ curl -X 'POST' \
 
 ```json
 {
-  "message": "Followed Succesfully"
+    "message": "Followed Succesfully"
 }
 ```
