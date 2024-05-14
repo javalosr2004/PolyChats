@@ -7,7 +7,7 @@ from src.api.auth import get_token
 from typing import Annotated
 
 router = APIRouter(
-    prefix="/followers",
+    prefix="/",
     tags=["followers"],
     dependencies=[Depends(get_token)]
 )
