@@ -7,14 +7,14 @@ from src.api.auth import get_token
 from typing import Annotated
 
 router = APIRouter(
-    prefix="/follow",
-    tags=["follow"],
+    prefix="/followers",
+    tags=["followers"],
     dependencies=[Depends(get_token)]
 )
 
 
-@router.post("/{user_id}")
-async def follow_user(token: Annotated[str, Depends(get_token)], user_id: int):
+@router.post("/follow/{username}")
+async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
     user = token
 
     if not user:
@@ -30,9 +30,9 @@ async def follow_user(token: Annotated[str, Depends(get_token)], user_id: int):
         followers = models.followers_table
 
         find_user_stmt = sqlalchemy.select(
-            users).where(users.c.id == user_id)
+            users).where(users.c.username == username)
         insert_follow_stmt = sqlalchemy.insert(followers).values({
-            "user_id": user_id,
+            "username": username,
             "follower": user
         })
         try:
@@ -54,8 +54,8 @@ async def follow_user(token: Annotated[str, Depends(get_token)], user_id: int):
     return {"message": "Followed Succesfully"}
 
 
-@router.delete("/unfollow/{user_id}")
-async def unfollow_user(token: Annotated[str, Depends(get_token)], user_id: int):
+@router.delete("/unfollow/{username}")
+async def unfollow_user(token: Annotated[str, Depends(get_token)], username: str):
     user = token
 
     if not user:
@@ -70,23 +70,25 @@ async def unfollow_user(token: Annotated[str, Depends(get_token)], user_id: int)
         users = models.user_table
         followers = models.followers_table
 
-        find_user_stmt = sqlalchemy.select(users).where(users.c.id == user_id)
-        unfollow_stmt = sqlalchemy.delete(followers).where(followers.c.follower == user).where(followers.c.user_id == user_id)
+        find_user_stmt = sqlalchemy.select(
+            users).where(users.c.username == username)
+        unfollow_stmt = sqlalchemy.delete(followers).where(
+            followers.c.follower == user).where(followers.c.username == username)
         try:
             user_result = connection.execute(find_user_stmt)
 
             if user_result.rowcount == 0:
                 raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found."
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found."
                 )
 
             unfollow_result = connection.execute(unfollow_stmt)
 
             if unfollow_result.rowcount == 0:
                 raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Not following user."
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Not following user."
                 )
         except Exception as E:
             print(E)
@@ -95,4 +97,3 @@ async def unfollow_user(token: Annotated[str, Depends(get_token)], user_id: int)
                 detail="Unable to unfollow."
             )
     return {"message": "Unfollowed Succesfully"}
-
