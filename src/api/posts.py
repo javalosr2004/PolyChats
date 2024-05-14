@@ -182,12 +182,17 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
             headers={"WWW-Authenticate": "Bearer"},
         )
     posts = models.post_table
+    users = models.user_table
 
     # updates the post with associated post id
     with db.engine.begin() as connection:
-        stmt = sqlalchemy.update(posts).values(post=new_post, date=func.now()).where(posts.c.post_id == post_id).where(posts.c.username == user)
+        user_id_stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
         try:
-            result = connection.execute(stmt)
+            user_id = connection.execute(user_id_stmt).one()[0]
+            print(user_id)
+
+            update_stmt = sqlalchemy.update(posts).values(post=new_post, date=func.now()).where(posts.c.post_id == post_id).where(posts.c.user_id == user_id)
+            result = connection.execute(update_stmt)
             if result.rowcount == 0:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
