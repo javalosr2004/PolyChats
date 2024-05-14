@@ -220,17 +220,44 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
     posts = models.post_table
     users = models.user_table
 
-    # updates the post with associated post id
+    # update the post with associated post id
     with db.engine.begin() as connection:
+        # retrieve the user_id from the users table using the username
         user_id_stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
         try:
-            user_id = connection.execute(user_id_stmt).one()[0]
-            print(user_id)
+            user_id_result = connection.execute(user_id_stmt).fetchone()
+            if not user_id_result:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid authentication credentials",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
 
-            update_stmt = sqlalchemy.update(posts).values(post=new_post, date=func.now()).where(posts.c.post_id == post_id).where(posts.c.user_id == user_id)
+            user_id = user_id_result[0]
+
+            # check if the post belongs to the user
+            post_user_id_stmt = sqlalchemy.select(posts.c.user_id).where(posts.c.post_id == post_id)
+            post_user_id_result = connection.execute(post_user_id_stmt).fetchone()
+            if not post_user_id_result:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Post not found."
+                )
+
+            post_user_id = post_user_id_result[0]
+
+            if user_id != post_user_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to update this post."
+                )
+
+            # update the post
+            update_stmt = sqlalchemy.update(posts).values(post=new_post, date=func.now()).where(posts.c.post_id == post_id)
             result = connection.execute(update_stmt)
             if result.rowcount == 0:
                 raise HTTPException(
@@ -239,9 +266,9 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
                 )
         except Exception as E:
             print(E)
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Unable to create post."
+                detail="Unable to update post."
             )
 
     return {"message": "Post updated successfully", "post_id": post_id}
