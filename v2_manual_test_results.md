@@ -176,8 +176,6 @@ curl -X 'POST' \
 }
 ```
 
-These placeholders can be filled in with specific details as needed.
-
 ## Hopeless Romantic Holly
 
 Holly made an account on Poly Chats after struggling to find the one. She knows there is someone out there for her and she believes they are on Poly Chats. She wants to make a post to help her find a boyfriend.
@@ -269,5 +267,109 @@ curl -X 'POST' \
 ```json
 {
     "message": "Followed Succesfully"
+}
+```
+
+3. ## Perfectionist Polly
+
+- Polly creates a new user account by calling POST /user/ with her name, desired username, and password.
+- She spends hours crafting the perfect post about her latest coding project, only to realize she made a typo in her username. Polly calls PATCH /user/change-username to update her username.
+- Polly finally posts her masterpiece by calling POST /post/ with her new username, password, and post content.
+- She obsessively refreshes the post page by calling GET /post/[post_id] every 30 seconds to check for likes and comments.
+- Upon receiving a comment suggesting a minor improvement to her code, Polly hastily deletes her post by calling DELETE /post/[post_id] and retreats to her coding cave to refactor her entire project.
+
+# Testing results
+
+1. Creating an account
+
+**Curl Command:**
+
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/auth/users/create?first_name=Polly&last_name=P&username=polly_cool_person&password=pass' \
+  -H 'accept: application/json' \
+  -d ''
+  ```
+
+**Response:**
+
+```json
+{ "Account created succesfully!" }
+```
+2. Patch Username
+
+**Curl Command:**
+
+```bash
+curl -X 'PATCH' \
+  'http://127.0.0.1:8000/auth/users/username?new_username=polly_cool' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer polly_cool_person'
+```
+
+**Response:**
+
+```json
+{ "message": "Username update succesfully" }
+```
+
+3. Create a new post
+
+**Curl Command:**
+
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/posts/create?post=This%20my%20masterful%20post' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer polly_cool' \
+  -d ''
+```
+
+**Response:**
+
+```json
+{ "post_id": 22 }
+```
+
+4. View her post
+
+**Curl Command:**
+
+```bash
+curl -X 'GET' \
+  'http://127.0.0.1:8000/posts/22' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer polly_cool'
+```
+**Response:**
+
+```json
+{
+  "post_id": 22,
+  "date": "2024-05-14T03:17:21.790557+00:00",
+  "user_id": 7,
+  "post": "This my masterful post",
+  "likes": 0,
+  "dislikes": 0
+}
+```
+
+4. Delete her post
+
+**Curl Command:**
+
+```bash
+curl -X 'DELETE' \
+  'http://127.0.0.1:8000/posts/delete/22' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer polly_cool'
+```
+
+**Response:**
+
+```json
+ {
+  "message": "Post deleted successfully",
+  "post_id": 22
 }
 ```
