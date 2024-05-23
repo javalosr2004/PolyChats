@@ -272,3 +272,64 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
             )
 
     return {"message": "Post updated successfully", "post_id": post_id}
+
+@router.post("/react/{post_id}")
+async def react_to_post(token: Annotated[str, Depends(get_token)], post_id: int, like: bool):
+    user = token
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    users = models.user_table
+    posts = models.post_table
+    reactions = models.reations_table
+
+    with db.engine.begin() as connection:
+        try:
+            # Verify that there is a post with that post id
+            post_verification_stmt = sqlalchemy.select(posts).where(posts.c.post_id == post_id)
+            post_result = connection.execute(post_verification_stmt)
+            if post_result.rowcount != 1:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Post not found."
+                )
+            
+            # Get user id
+            user_id_stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
+            user_id_result = connection.execute(user_id_stmt).fetchone()[0]
+            if not user_id_result:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid authentication credentials",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            
+            # Determine if there is already a reaction of another type to the post
+            check_stmt = sqlalchemy.select(reactions).where(reactions.c.post_id == post_id, reactions.c.user_id == user_id_result)
+            check_result = connection.execute(check_stmt)
+            check_reaction = check_result.fetchone()
+            if check_result.rowcount == 0:   
+                # Add a reaction to the table 
+                reaction_stmt = sqlalchemy.insert(reactions).values(like=like, post_id=post_id, user_id=user_id_result)          
+            elif check_reaction.like != like:
+                # Update the reaction
+                reaction_stmt = sqlalchemy.update(reactions).values(like=like).where(reactions.c.post_id == post_id, reactions.c.user_id == user_id_result)
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Like already exists." if like else "Dislike already exists."
+                )
+
+            connection.execute(reaction_stmt)
+        except Exception as E:
+            print(E)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unable to like post." if like else "Unable to dislike post."
+            )
+        
+    return {"message": "Post liked successfully" if like else "Post disliked successfully", "post_id": post_id}

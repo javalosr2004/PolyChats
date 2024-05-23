@@ -16,3 +16,7 @@ post_table = sqlalchemy.Table("Posts", posts_table_metadata, autoload_with=datab
 # SQL table for Followers
 followers_table_metadata = sqlalchemy.MetaData()
 followers_table = sqlalchemy.Table("Followers", followers_table_metadata, autoload_with=database.engine)
+
+# SQL table for Likes/Dislikes (Reactions)
+reactions_table_metadata = sqlalchemy.MetaData()
+reations_table = sqlalchemy.Table("Reactions", reactions_table_metadata, autoload_with=database.engine)
