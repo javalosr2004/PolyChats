@@ -61,9 +61,20 @@ async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
 
         if (pages_available - ((page - 1) * 10)) < 0:
             return {"prev": pages_available + 1, "next": "", "posts": []}
-        stmt = sqlalchemy.select(models.post_table).offset((page-1) * 10).limit(10).order_by(
-            models.post_table.c.date.desc())
-        posts = connection.execute(stmt).mappings().all()
+        stmt = sqlalchemy.text("""
+            SELECT p.post_id, p.date, p.user_id, p.post, 
+            COUNT(DISTINCT c.id) AS comments, 
+            COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes, 
+            COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+            FROM "Posts" p
+            LEFT JOIN "Comments" c ON c.post_id = p.post_id
+            LEFT JOIN "Reactions" r ON r.post_id = p.post_id
+            GROUP BY p.post_id, p.date, p.user_id, p.post
+            ORDER BY date DESC
+            OFFSET :offset
+            LIMIT :limit
+            """)
+        posts = connection.execute(stmt, {"offset": (page-1)*10, "limit": 10}).mappings().all()
         return {
             "prev": return_previous_page(pages_available, page),
             "next": return_next_page(pages_available, page),
@@ -83,9 +94,19 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
     with db.engine.begin() as connection:
         # attempt to find post with given id
         if id >= 0:
-            stmt = sqlalchemy.select(models.post_table).where(
-                models.post_table.c.post_id == id)
-            post = connection.execute(stmt).mappings().one_or_none()
+            # 
+            stmt = sqlalchemy.text("""
+                SELECT p.post_id, p.date, p.user_id, p.post, 
+                COUNT(DISTINCT c.id) AS comments, 
+                COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes, 
+                COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+                FROM "Posts" p
+                LEFT JOIN "Comments" c ON c.post_id = p.post_id
+                LEFT JOIN "Reactions" r ON r.post_id = p.post_id
+                WHERE p.post_id = :post_id
+                GROUP BY p.post_id, p.date, p.user_id, p.post
+                """)
+            post = connection.execute(stmt, {"post_id": id}).mappings().one_or_none()
             if not post:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
