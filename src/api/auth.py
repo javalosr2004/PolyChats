@@ -92,7 +92,6 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     if not user:
         raise HTTPException(
             status_code=400, detail="Incorrect username or password")
-    
     if not form_data.password == user[1]:
         raise HTTPException(
             status_code=400, detail="Incorrect username or password")

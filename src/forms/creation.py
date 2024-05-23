@@ -5,7 +5,7 @@ from fastapi.param_functions import Form
 # TODO: import from typing when deprecating Python 3.9
 from typing_extensions import Annotated, Doc
 
-
+# Handles OAuth2 authentication
 class OAuth2Creation(OAuth2PasswordRequestForm):
 
     def __init__(
