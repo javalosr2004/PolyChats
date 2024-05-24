@@ -50,11 +50,11 @@ def parse_user_data_from_username(username: str):
         top_posts = sqlalchemy.select(
             post_table.c.post_id, post_table.c.post,
             sqlalchemy.func.rank().over(order_by=sqlalchemy.func.count(
-                reations_table.c.like).desc()).label('post_rank')
+                reactions_table.c.like).desc()).label('post_rank')
         ).select_from(
             post_table
         ).outerjoin(
-            reations_table, reations_table.c.post_id == post_table.c.post_id
+            reactions_table, reactions_table.c.post_id == post_table.c.post_id
         ).where(
             post_table.c.user_id == id
         ).group_by(

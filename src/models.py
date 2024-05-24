@@ -23,7 +23,7 @@ followers_table = sqlalchemy.Table(
 
 # SQL table for Likes/Dislikes (Reactions)
 reactions_table_metadata = sqlalchemy.MetaData()
-reations_table = sqlalchemy.Table(
+reactions_table = sqlalchemy.Table(
     "Reactions", reactions_table_metadata, autoload_with=database.engine)
 
 # SQL table for Profile

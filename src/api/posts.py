@@ -74,7 +74,8 @@ async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
             OFFSET :offset
             LIMIT :limit
             """)
-        posts = connection.execute(stmt, {"offset": (page-1)*10, "limit": 10}).mappings().all()
+        posts = connection.execute(
+            stmt, {"offset": (page-1)*10, "limit": 10}).mappings().all()
         return {
             "prev": return_previous_page(pages_available, page),
             "next": return_next_page(pages_available, page),
@@ -94,7 +95,7 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
     with db.engine.begin() as connection:
         # attempt to find post with given id
         if id >= 0:
-            # 
+            #
             stmt = sqlalchemy.text("""
                 SELECT p.post_id, p.date, p.user_id, p.post, 
                 COUNT(DISTINCT c.id) AS comments, 
@@ -106,7 +107,8 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
                 WHERE p.post_id = :post_id
                 GROUP BY p.post_id, p.date, p.user_id, p.post
                 """)
-            post = connection.execute(stmt, {"post_id": id}).mappings().one_or_none()
+            post = connection.execute(
+                stmt, {"post_id": id}).mappings().one_or_none()
             if not post:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -125,10 +127,11 @@ async def create_post(token: Annotated[str, Depends(get_token)], post: str):
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
    # Fetch the user_id based on the username
     users = models.user_table
-    find_username_stmt = sqlalchemy.select(users.c.id).where(users.c.username == username)
+    find_username_stmt = sqlalchemy.select(
+        users.c.id).where(users.c.username == username)
 
     # Creates a post with associated user id
     with db.engine.begin() as connection:
@@ -189,7 +192,8 @@ async def delete_post(token: Annotated[str, Depends(get_token)], post_id: int):
     # retrieve the user_id from the post table for the given post_id
     with db.engine.begin() as connection:
         posts = models.post_table
-        stmt = sqlalchemy.select(posts.c.user_id).where(posts.c.post_id == post_id)
+        stmt = sqlalchemy.select(posts.c.user_id).where(
+            posts.c.post_id == post_id)
         post_result = connection.execute(stmt).fetchone()
 
         if not post_result:
@@ -210,10 +214,12 @@ async def delete_post(token: Annotated[str, Depends(get_token)], post_id: int):
     # deleting the comments and the post
     with db.engine.begin() as connection:
         comments = models.comment_table
-        delete_comments_stmt = sqlalchemy.delete(comments).where(comments.c.post_id == post_id)
+        delete_comments_stmt = sqlalchemy.delete(
+            comments).where(comments.c.post_id == post_id)
         connection.execute(delete_comments_stmt)
 
-        delete_post_stmt = sqlalchemy.delete(posts).where(posts.c.post_id == post_id)
+        delete_post_stmt = sqlalchemy.delete(
+            posts).where(posts.c.post_id == post_id)
         try:
             result = connection.execute(delete_post_stmt)
 
@@ -232,6 +238,7 @@ async def delete_post(token: Annotated[str, Depends(get_token)], post_id: int):
 
     return {"message": "Post and associated comments deleted successfully", "post_id": post_id}
 
+
 @router.patch("/update/{post_id}")
 async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, new_post: str):
     user = token
@@ -248,7 +255,8 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
     # update the post with associated post id
     with db.engine.begin() as connection:
         # retrieve the user_id from the users table using the username
-        user_id_stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
+        user_id_stmt = sqlalchemy.select(
+            users.c.id).where(users.c.username == user)
         try:
             user_id_result = connection.execute(user_id_stmt).fetchone()
             if not user_id_result:
@@ -261,8 +269,10 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
             user_id = user_id_result[0]
 
             # check if the post belongs to the user
-            post_user_id_stmt = sqlalchemy.select(posts.c.user_id).where(posts.c.post_id == post_id)
-            post_user_id_result = connection.execute(post_user_id_stmt).fetchone()
+            post_user_id_stmt = sqlalchemy.select(
+                posts.c.user_id).where(posts.c.post_id == post_id)
+            post_user_id_result = connection.execute(
+                post_user_id_stmt).fetchone()
             if not post_user_id_result:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -278,7 +288,8 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
                 )
 
             # update the post
-            update_stmt = sqlalchemy.update(posts).values(post=new_post, date=func.now()).where(posts.c.post_id == post_id)
+            update_stmt = sqlalchemy.update(posts).values(
+                post=new_post, date=func.now()).where(posts.c.post_id == post_id)
             result = connection.execute(update_stmt)
             if result.rowcount == 0:
                 raise HTTPException(
@@ -294,6 +305,7 @@ async def update_post(token: Annotated[str, Depends(get_token)], post_id: int, n
 
     return {"message": "Post updated successfully", "post_id": post_id}
 
+
 @router.post("/react/{post_id}")
 async def react_to_post(token: Annotated[str, Depends(get_token)], post_id: int, like: bool):
     user = token
@@ -306,21 +318,23 @@ async def react_to_post(token: Annotated[str, Depends(get_token)], post_id: int,
 
     users = models.user_table
     posts = models.post_table
-    reactions = models.reations_table
+    reactions = models.reactions_table
 
     with db.engine.begin() as connection:
         try:
             # Verify that there is a post with that post id
-            post_verification_stmt = sqlalchemy.select(posts).where(posts.c.post_id == post_id)
+            post_verification_stmt = sqlalchemy.select(
+                posts).where(posts.c.post_id == post_id)
             post_result = connection.execute(post_verification_stmt)
             if post_result.rowcount != 1:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Post not found."
                 )
-            
+
             # Get user id
-            user_id_stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
+            user_id_stmt = sqlalchemy.select(
+                users.c.id).where(users.c.username == user)
             user_id_result = connection.execute(user_id_stmt).fetchone()[0]
             if not user_id_result:
                 raise HTTPException(
@@ -328,17 +342,20 @@ async def react_to_post(token: Annotated[str, Depends(get_token)], post_id: int,
                     detail="Invalid authentication credentials",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            
+
             # Determine if there is already a reaction of another type to the post
-            check_stmt = sqlalchemy.select(reactions).where(reactions.c.post_id == post_id, reactions.c.user_id == user_id_result)
+            check_stmt = sqlalchemy.select(reactions).where(
+                reactions.c.post_id == post_id, reactions.c.user_id == user_id_result)
             check_result = connection.execute(check_stmt)
             check_reaction = check_result.fetchone()
-            if check_result.rowcount == 0:   
-                # Add a reaction to the table 
-                reaction_stmt = sqlalchemy.insert(reactions).values(like=like, post_id=post_id, user_id=user_id_result)          
+            if check_result.rowcount == 0:
+                # Add a reaction to the table
+                reaction_stmt = sqlalchemy.insert(reactions).values(
+                    like=like, post_id=post_id, user_id=user_id_result)
             elif check_reaction.like != like:
                 # Update the reaction
-                reaction_stmt = sqlalchemy.update(reactions).values(like=like).where(reactions.c.post_id == post_id, reactions.c.user_id == user_id_result)
+                reaction_stmt = sqlalchemy.update(reactions).values(like=like).where(
+                    reactions.c.post_id == post_id, reactions.c.user_id == user_id_result)
             else:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -352,5 +369,5 @@ async def react_to_post(token: Annotated[str, Depends(get_token)], post_id: int,
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to like post." if like else "Unable to dislike post."
             )
-        
+
     return {"message": "Post liked successfully" if like else "Post disliked successfully", "post_id": post_id}
