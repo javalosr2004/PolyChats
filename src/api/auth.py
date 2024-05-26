@@ -112,13 +112,30 @@ async def create_account(first_name: str, last_name: str, username: str, passwor
         print(user)
         if (not user):
             # create user with set password
+
             stmt = sqlalchemy.insert(models.user_table).values({
                 "first_name": first_name,
                 "last_name": last_name,
                 "username": username,
                 "password": password
-            })
-            connection.execute(stmt)
+            }).returning(models.user_table.c.id)
+            id = connection.execute(stmt).scalar_one_or_none()
+            if (id == None):
+                raise HTTPException(
+                    status_code=500, detail="Error occured while creating user. Please try again.")
+
+            # commit changes in case of error in inserting to Profile
+            try:
+                stmt = sqlalchemy.insert(models.profile_table).values({
+                    "owner_id": id
+                })
+                connection.execute(stmt)
+                connection.commit()
+            except Exception as e:
+                print(e)
+                connection.rollback()
+                raise HTTPException(
+                    status_code=500, detail="Error occured while creating profile. Please try again.")
         else:
             raise HTTPException(
                 status_code=400, detail="Username already taken. Choose another.")
