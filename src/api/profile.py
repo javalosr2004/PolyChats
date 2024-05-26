@@ -106,7 +106,7 @@ async def get_my_profile(token: Annotated[str, Depends(get_token)]):
 
 
 @ router.get("/{username}")
-async def view_post_id(token: Annotated[str, Depends(get_token)], username: int):
+async def get_person_profile(token: Annotated[str, Depends(get_token)], username: str):
     user = token
     if not user:
         raise HTTPException(
@@ -114,21 +114,4 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], username: int)
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    with db.engine.begin() as connection:
-        # attempt to find post with given id
-        if id >= 0:
-            #
-            stmt = sqlalchemy.select(models.post_table).where(
-                models.post_table.c.post_id == id)
-            post = connection.execute(stmt).mappings().one_or_none()
-            if not post:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid profile id passed."
-                )
-            return post
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid profile id passed."
-            )
+    return parse_user_data_from_username(username)
