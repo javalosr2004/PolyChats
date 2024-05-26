@@ -6,6 +6,7 @@ from src import database as db, models
 from sqlalchemy import func
 from src.api.auth import get_token
 from typing import Annotated
+from datetime import datetime
 
 router = APIRouter(
     prefix="/profile",
@@ -29,6 +30,7 @@ def parse_user_data_from_username(username: str, visitor: str = None):
     user_profile = {
         "Name": None,
         "About Me": None,
+        "Account Created": None,
         "Public": True,
         "Username": None,
         "Followers": 0,
@@ -53,7 +55,7 @@ def parse_user_data_from_username(username: str, visitor: str = None):
                 detail="For some reason you account is glitched. Don't know how,commits should've rolled back during creation.")
 
         # check if profile is public
-        if not db_profile['public'] and visitor:
+        if not db_profile['public'] and visitor != username:
             # check to see if visitor is in friends list
             friend_stmt = sqlalchemy.select(sqlalchemy.func.count()).join(user_table, user_table.c.username == visitor).where(followers_table.c.user_id == user['id']
                                                                                                                               and user_table.c.id == followers_table.c.follower_id)
@@ -71,6 +73,9 @@ def parse_user_data_from_username(username: str, visitor: str = None):
         user_profile["Username"] = user['username']
         user_profile["About Me"] = db_profile["about_me"]
         user_profile["Public"] = db_profile["public"]
+        date = datetime.fromisoformat(str(db_profile["created_at"]))
+
+        user_profile["Account Created"] = date.strftime("%B %d, %Y")
         id = user["id"]
 
         top_posts = sqlalchemy.select(
@@ -131,7 +136,7 @@ async def get_my_profile(token: Annotated[str, Depends(get_token)]):
     # parse
 
 
-@ router.get("/{username}")
+@router.get("/{username}")
 async def get_person_profile(token: Annotated[str, Depends(get_token)], username: str):
     user = token
     if not user:
@@ -141,3 +146,36 @@ async def get_person_profile(token: Annotated[str, Depends(get_token)], username
             headers={"WWW-Authenticate": "Bearer"},
         )
     return parse_user_data_from_username(username, user)
+
+
+@router.patch("/")
+async def change_profile(token: Annotated[str, Depends(get_token)], public: bool = None, about_me: str = None):
+    user = token
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    profile = {}
+    if not public and not about_me:
+        raise HTTPException(
+            status_code=status.HTTP_418_IM_A_TEAPOT, detail="Bro. What are you doing.")
+    if public != None:
+        profile['public'] = public
+    if about_me != None:
+        profile['about_me'] = about_me
+    with db.engine.begin() as connection:
+        id_stmt = sqlalchemy.select(user_table.c.id).where(
+            user_table.c.username == user).scalar_subquery()
+        stmt = sqlalchemy.update(profile_table).where(
+            id_stmt == profile_table.c.owner_id
+        )
+        try:
+            connection.execute(stmt, profile)
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="Failed to update profile. Internal server error.")
+
+    return "Profile has been updated!"
