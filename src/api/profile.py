@@ -20,11 +20,12 @@ router = APIRouter(
 '''
 
 
-def parse_user_data_from_username(username: str):
+def parse_user_data_from_username(username: str, visitor: str = None):
     # initializing default values
     id = 0
     user = None
     posts = []
+    db_profile = None
     user_profile = {
         "Name": None,
         "Username": None,
@@ -40,6 +41,27 @@ def parse_user_data_from_username(username: str):
         if not (user := res.mappings().first()):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username.")
+
+        res = connection.execute(sqlalchemy.select(profile_table).where(
+            profile_table.c.owner_id == user['id']))
+        db_profile = res.mappings().first()
+        if not db_profile:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="For some reason you account is glitched. Don't know how,commits should've rolled back during creation.")
+
+        # check if profile is public
+        if not db_profile['public'] and visitor:
+            # check to see if visitor is in friends list
+            friend_stmt = sqlalchemy.select(sqlalchemy.func.count()).join(user_table, user_table.c.username == visitor).where(followers_table.c.user_id == user['id']
+                                                                                                                              and user_table.c.id == followers_table.c.follower_id)
+            res = connection.execute(friend_stmt).scalar_one_or_none()
+            if not res:
+                '''maybe a little ambitious we'll see if we get to do friend requests'''
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Sorry. This person has made their account private. Request a follow to see their secrets."
+                )
 
         # parse the data
         user_profile["Name"] = str.title(
@@ -114,4 +136,4 @@ async def get_person_profile(token: Annotated[str, Depends(get_token)], username
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return parse_user_data_from_username(username)
+    return parse_user_data_from_username(username, user)
