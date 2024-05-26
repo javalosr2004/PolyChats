@@ -99,7 +99,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     return {"access_token": user.username, "token_type": "bearer"}
 
 
-@router.post("/users/create")
+@router.post("/users")
 async def create_account(first_name: str, last_name: str, username: str, password: str):
     # check if username is taken.
     user = None
