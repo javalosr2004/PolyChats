@@ -28,6 +28,8 @@ def parse_user_data_from_username(username: str, visitor: str = None):
     db_profile = None
     user_profile = {
         "Name": None,
+        "About Me": None,
+        "Public": True,
         "Username": None,
         "Followers": 0,
         "Following": 0,
@@ -67,6 +69,8 @@ def parse_user_data_from_username(username: str, visitor: str = None):
         user_profile["Name"] = str.title(
             user['first_name'] + " " + user["last_name"])
         user_profile["Username"] = user['username']
+        user_profile["About Me"] = db_profile["about_me"]
+        user_profile["Public"] = db_profile["public"]
         id = user["id"]
 
         top_posts = sqlalchemy.select(
