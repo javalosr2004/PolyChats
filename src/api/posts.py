@@ -69,20 +69,77 @@ async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
             FROM "Posts" p
             LEFT JOIN "Comments" c ON c.post_id = p.post_id
             LEFT JOIN "Reactions" r ON r.post_id = p.post_id
+            LEFT JOIN "Profile" pr ON pr.owner_id = p.user_id
+            LEFT JOIN (
+            SELECT *
+            FROM "Followers" f1
+            JOIN "User" u ON u.id = f1.follower_id
+            WHERE username = :user
+            ) f ON f.user_id = p.user_id
+            WHERE pr.public = TRUE OR (pr.public = FALSE AND f.username = :user)
             GROUP BY p.post_id, p.date, p.user_id, p.post
             ORDER BY date DESC
             OFFSET :offset
             LIMIT :limit
             """)
         posts = connection.execute(
-            stmt, {"offset": (page-1)*10, "limit": 10}).mappings().all()
+            stmt, {"offset": (page-1)*10, "limit": 10, "user": user}).mappings().all()
         return {
             "prev": return_previous_page(pages_available, page),
             "next": return_next_page(pages_available, page),
             "posts": posts
         }
 
+@router.get("/following")
+async def view_following_page(token: Annotated[str, Depends(get_token)], page: int = 1):
+    user = token
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if page < 1:
+        page = 1
+    # returns the 10 most recent posts from who the user follows
+    with db.engine.begin() as connection:
 
+        stmt = sqlalchemy.select(
+            sqlalchemy.func.count()).select_from(models.post_table)
+        pages_available = connection.execute(stmt).scalar_one() // 10
+        print(pages_available)
+
+        if (pages_available - ((page - 1) * 10)) < 0:
+            return {"prev": pages_available + 1, "next": "", "posts": []}
+        stmt = sqlalchemy.text("""
+            SELECT p.post_id, p.date, p.user_id, p.post, 
+            COUNT(DISTINCT c.id) AS comments, 
+            COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes, 
+            COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+            FROM "Posts" p
+            LEFT JOIN "Comments" c ON c.post_id = p.post_id
+            LEFT JOIN "Reactions" r ON r.post_id = p.post_id
+            LEFT JOIN "Profile" pr ON pr.owner_id = p.user_id
+            LEFT JOIN (
+            SELECT *
+            FROM "Followers" f1
+            JOIN "User" u ON u.id = f1.follower_id
+            WHERE username = :user
+            ) f ON f.user_id = p.user_id
+            WHERE f.username = :user
+            GROUP BY p.post_id, p.date, p.user_id, p.post
+            ORDER BY date DESC
+            OFFSET :offset
+            LIMIT :limit
+            """)
+        posts = connection.execute(
+            stmt, {"offset": (page-1)*10, "limit": 10, "user": user}).mappings().all()
+        return {
+            "prev": return_previous_page(pages_available, page),
+            "next": return_next_page(pages_available, page),
+            "posts": posts
+        }
+    
 @router.get("/{id}")
 async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
     user = token
@@ -104,19 +161,25 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
                 FROM "Posts" p
                 LEFT JOIN "Comments" c ON c.post_id = p.post_id
                 LEFT JOIN "Reactions" r ON r.post_id = p.post_id
-                WHERE p.post_id = :post_id
+                LEFT JOIN "Profile" pr ON pr.owner_id = p.user_id
+                LEFT JOIN (
+                SELECT *
+                FROM "Followers" f1
+                JOIN "User" u ON u.id = f1.follower_id
+                WHERE username = :user
+                ) f ON f.user_id = p.user_id
+                WHERE p.post_id = :post_id AND (pr.public = TRUE OR (pr.public = FALSE AND f.username = :user))
                 GROUP BY p.post_id, p.date, p.user_id, p.post
                 """)
             post = connection.execute(
-                stmt, {"post_id": id}).mappings().one_or_none()
+                stmt, {"post_id": id, "user": user}).mappings().one_or_none()
             if not post:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid request. Id not does exist."
+                    detail="Invalid request."
                 )
             return post
-
-
+    
 @ router.post("/create")
 async def create_post(token: Annotated[str, Depends(get_token)], post: str):
     username = token
