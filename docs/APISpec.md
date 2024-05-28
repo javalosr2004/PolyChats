@@ -3,6 +3,7 @@
 ## 1. User Account Information
 
 The API calls are made in this sequence when making a purchase:
+
 1. `User Account Information`
 2. `Normie Actions`
 3. `Regretful Actions`
@@ -12,6 +13,7 @@ The API calls are made in this sequence when making a purchase:
 Creates a user, given a unique username and password. On success returns the username.
 
 **Request**:
+
 ```json
 {
     "name": "string",
@@ -41,15 +43,19 @@ Changes the username of a given user, and returns new username or returns error 
     "password": "string"
 }
 ```
+
 **Response**:
-__Success__
+**Success**
+
 ```json
 {
     "username": "string"
 }
 ```
-__Failure__
+
+**Failure**
 [HTTP Response: 418](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)
+
 ```json
 {
     "error_message": "string"
@@ -64,27 +70,28 @@ This endpoint allows a given user to edit their profile.
 
 ```json
 {
-    "public": boolean | None
-    "about_me": string
+    "public": "boolean" | "None"
+    "about_me": "string"
 }
 ```
+
 **Response**:
-__Success__
+**Success**
+
 ```json
 {
-       "message": "Account has been updated!"
-    }
+    "message": "Account has been updated!"
+}
 ```
-__Failure__
+
+**Failure**
 HTTP Response 500 (Internal Server Error)
+
 ```json
 {
     "error_message": "string" /* db issue with Profile or miscelleneous, however shouldn't happen as rollbacks / commits are in place during user creation process which creates their Profile */
 }
 ```
-
-
-
 
 ## 2. Normie Actions
 
@@ -96,20 +103,23 @@ Creates a new post given username and password.
 
 ```json
 {
-  "username": "string",
-  "password": "string",
-  "post": "string"
+    "username": "string",
+    "password": "string",
+    "post": "string"
 }
 ```
 
 **Response**:
 Success
+
 ```json
 {
     "post_id": "string" /* This id will be used to modify any regretfully made posts, or if one wants to always appear right */
 }
 ```
+
 Failure: HTTP Response 401
+
 ```json
 {
     "error_message": "string" /* Default value is "Incorrect password use the one below" */
@@ -121,42 +131,50 @@ Failure: HTTP Response 401
 Edits a post that already exists, given that the owner is editing it.
 
 **Request**:
+
 ```json
 {
     "username": "string",
     "password": "string",
-    "new_post" "string"
+    "new_post": "string"
 }
 ```
+
 **Response**:
 Success
+
 ```json
 {
     "message": "string"
 }
 ```
-Failure: 
+
+Failure:
 
 HTTP Response 401
+
 ```json
 {
     "message": "string" /* Default value is "Incorrect password or username" */
 ```
 
 HTTP Response 404
+
 ```json
 {
     "message": "string" /* Default value is "Post id was not found" */
 ```
+
 ### 2.3. View a post - '/post/[post_id]' (GET)
 
 Views a post that already exists along with the comments, likes, and dislikes.
 **Request**:
 
 Success
+
 ```json
 {
-    "post_id": "string" ,
+    "post_id": "string",
     "username": "string",
     "post": "string",
     "comments": "list",
@@ -167,14 +185,16 @@ Success
 
 **Response**:
 Success
+
 ```json
 {
     "message": "string" /* Default value is "OK" */
 ```
 
-Failure: 
+Failure:
 
 HTTP Response 404
+
 ```json
 {
     "error_message": "string" /* Default value is "Post id was not found" */
@@ -185,6 +205,7 @@ HTTP Response 404
 Creates a comment for the current user "signed in".
 
 **Request**:
+
 ```json
 {
     "username": "string",
@@ -196,23 +217,25 @@ Creates a comment for the current user "signed in".
 **Response**:
 
 Success
+
 ```json
 {
     "message": "string"
 }
 ```
 
-Failure: 
+Failure:
 
 HTTP Response 401
+
 ```json
 {
     "message": "string" /* Default value is "Incorrect password or username" */
 }
-
 ```
 
 HTTP Response 404
+
 ```json
 {
     "message": "string" /* Default value is "Post id was not found" */
@@ -222,6 +245,7 @@ HTTP Response 404
 ### 2.5. Follow a user - '/user/[user_id]/follow' (POST)
 
 **Request**:
+
 ```json
 {
     "username": "string",
@@ -229,32 +253,34 @@ HTTP Response 404
     "follow_username": "string"
 }
 ```
+
 **Response**:
 
 Success
+
 ```json
 {
     "message": "string"
 }
 ```
 
-Failure: 
+Failure:
 
 HTTP Response 401
+
 ```json
 {
     "message": "string" /* Default value is "Incorrect password or username" */
 }
-
 ```
 
 HTTP Response 404
+
 ```json
 {
     "message": "string" /* Default value is "Post id was not found" */
 }
 ```
-
 
 ### 1.3. View others profile - `/profile/{username}` (GET)
 
@@ -263,27 +289,31 @@ Retrieves profile of another user if they are following the user or their profil
 **Request**:
 
 Passed through url params.
+
+```json
+{}
+```
+
+**Response**:
+**Success**
+
 ```json
 {
+    "Name": "string",
+    "About Me": "string",
+    "Account Created": "string",
+    "Public": "boolean",
+    "Username": "string",
+    "ID": "number",
+    "Followers": "number",
+    "Following": "number",
+    "Top Posts": "Post[]"
 }
 ```
-**Response**:
-__Success__
-```json
-{
-        "Name": string,
-        "About Me": string,
-        "Account Created": string,
-        "Public": boolean,
-        "Username": string,
-        "ID": number,
-        "Followers": number,
-        "Following": number,
-        "Top Posts": Post[]
-    }
-```
-__Failure__
+
+**Failure**
 HTTP Response 500 (Internal Server Error)
+
 ```json
 {
     "error_message": "string" /* because 'about me' couldn't be found for specified user */
@@ -291,6 +321,7 @@ HTTP Response 500 (Internal Server Error)
 ```
 
 HTTP Response 403 (Forbidden)
+
 ```json
 {
     "error_message": "string" /* if the profile that they are trying to view is private and they aren't following the user, then they will recieve a 403 message */
@@ -304,7 +335,8 @@ HTTP Response 403 (Forbidden)
 Allows a user to delete a comment they made on a post.
 
 **Request**:
-```json
+
+````json
 {
     "username": "string",
     "password": "string"
@@ -317,17 +349,19 @@ Success
 {
     "message": "string"
 }
-```
+````
 
-Failure: 
+Failure:
 
 HTTP Response 401
+
 ```json
 {
     "message": "string" /* Default value is "Incorrect password or username" */
 ```
 
 HTTP Response 404
+
 ```json
 {
     "message": "string" /* Default value is "Post id was not found" */
@@ -336,6 +370,7 @@ HTTP Response 404
 ### 3.2. Unfollow a user - '/user/[user_id]/unfollow' (DELETE)
 
 **Request**:
+
 ```json
 {
     "username": "string",
@@ -343,19 +378,22 @@ HTTP Response 404
     "unfollow_username": "string"
 }
 ```
+
 **Response**:
 
 Success
+
 ```json
 {
     "message": "string"
 }
 ```
 
-Failure: 
+Failure:
 
 HTTP Response 401
-```json
+
+````json
 {
     "message": "string" /* Default value is "Incorrect password or username" */
 }
@@ -367,40 +405,43 @@ HTTP Response 404
 {
     "message": "string" /* Default value is "Post id was not found" */
 }
-```
+````
 
 ### 3.3. Delete a post - '/post/[post_id]' (DELETE)
 
 **Request**:
+
 ```json
 {
     "username": "string",
-    "password": "string",
+    "password": "string"
 }
 ```
+
 **Response**:
 
 Success
+
 ```json
 {
     "message": "string"
 }
 ```
 
-Failure: 
+Failure:
 
 HTTP Response 401
+
 ```json
 {
     "message": "string" /* Default value is "Incorrect password or username" */
 }
-
 ```
 
 HTTP Response 404
+
 ```json
 {
     "message": "string" /* Default value is "Post id was not found" */
 }
-
-
+```

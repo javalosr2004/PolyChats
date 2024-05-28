@@ -33,6 +33,7 @@ def parse_user_data_from_username(username: str, visitor: str = None):
         "Account Created": None,
         "Public": True,
         "Username": None,
+        "ID": None,
         "Followers": 0,
         "Following": 0,
         "Top Posts": []
@@ -55,7 +56,7 @@ def parse_user_data_from_username(username: str, visitor: str = None):
                 detail="For some reason you account is glitched. Don't know how,commits should've rolled back during creation.")
 
         # check if profile is public
-        if not db_profile['public'] and visitor != username:
+        if not db_profile['public'] and visitor != None and visitor != username:
             # check to see if visitor is in friends list
             friend_stmt = sqlalchemy.select(sqlalchemy.func.count()).join(user_table, user_table.c.username == visitor).where(followers_table.c.user_id == user['id']
                                                                                                                               and user_table.c.id == followers_table.c.follower_id)
@@ -77,6 +78,8 @@ def parse_user_data_from_username(username: str, visitor: str = None):
 
         user_profile["Account Created"] = date.strftime("%B %d, %Y")
         id = user["id"]
+
+        user_profile["ID"] = id
 
         top_posts = sqlalchemy.select(
             post_table.c.post_id, post_table.c.post,
