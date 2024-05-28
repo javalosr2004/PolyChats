@@ -282,7 +282,7 @@ HTTP Response 404
 }
 ```
 
-### 1.3. View others profile - `/profile/{username}` (GET)
+### 2.6. View others profile - `/profile/{username}` (GET)
 
 Retrieves profile of another user if they are following the user or their profile is public. Returns relevant information - username, user_id, date of account creation, top posts, etc.
 
@@ -325,6 +325,89 @@ HTTP Response 403 (Forbidden)
 ```json
 {
     "error_message": "string" /* if the profile that they are trying to view is private and they aren't following the user, then they will recieve a 403 message */
+}
+```
+
+### 2.7. React to a Post - '/posts/react/{post_id}' (POST)
+
+Allows users to set how they feel about a post. Can change a like to a dislike or dislike to like. 
+
+**Request**:
+
+```json
+{
+    "post_id": "integer",
+    "like": "boolean",
+}
+```
+
+**Response**:
+
+Success
+
+```json
+{
+    "message": "string"
+}
+```
+
+Failure:
+
+HTTP Response 401
+
+```json
+{
+    "message": "string" /* Default value is "Invalid authentication credentials" */
+}
+```
+
+HTTP Response 403
+
+```json
+{
+    "message": "string" /* Default value is "Like/Dislike already exists." */
+}
+```
+
+HTTP Response 404
+
+```json
+{
+    "message": "string" /* Default value is "Post not found." */
+}
+```
+
+### 2.8. View Following Page - '/posts/following' (GET)
+
+Allows users to only see posts from users they follow.
+
+**Request**:
+
+```json
+{
+    "page": "integer"
+}
+```
+
+**Response**:
+
+Success
+
+```json
+{
+    "prev": "integer",
+    "next": "integer",
+    "posts": []
+}
+```
+
+Failure:
+
+HTTP Response 401
+
+```json
+{
+    "message": "string" /* Default value is "Invalid authentication credentials" */
 }
 ```
 
