@@ -56,6 +56,36 @@ __Failure__
 }
 ```
 
+### 1.3. View your profile - `/profile` (PATCH)
+
+This endpoint allows a given user to edit their profile.
+
+**Request**:
+
+```json
+{
+    "public": boolean | None
+    "about_me": string
+}
+```
+**Response**:
+__Success__
+```json
+{
+       "message": "Account has been updated!"
+    }
+```
+__Failure__
+HTTP Response 500 (Internal Server Error)
+```json
+{
+    "error_message": "string" /* db issue with Profile or miscelleneous, however shouldn't happen as rollbacks / commits are in place during user creation process which creates their Profile */
+}
+```
+
+
+
+
 ## 2. Normie Actions
 
 ### 2.1. Create a post - `/post/` (POST)
@@ -222,6 +252,48 @@ HTTP Response 404
 ```json
 {
     "message": "string" /* Default value is "Post id was not found" */
+}
+```
+
+
+### 1.3. View others profile - `/profile/{username}` (GET)
+
+Retrieves profile of another user if they are following the user or their profile is public. Returns relevant information - username, user_id, date of account creation, top posts, etc.
+
+**Request**:
+
+Passed through url params.
+```json
+{
+}
+```
+**Response**:
+__Success__
+```json
+{
+        "Name": string,
+        "About Me": string,
+        "Account Created": string,
+        "Public": boolean,
+        "Username": string,
+        "ID": number,
+        "Followers": number,
+        "Following": number,
+        "Top Posts": Post[]
+    }
+```
+__Failure__
+HTTP Response 500 (Internal Server Error)
+```json
+{
+    "error_message": "string" /* because 'about me' couldn't be found for specified user */
+}
+```
+
+HTTP Response 403 (Forbidden)
+```json
+{
+    "error_message": "string" /* if the profile that they are trying to view is private and they aren't following the user, then they will recieve a 403 message */
 }
 ```
 
