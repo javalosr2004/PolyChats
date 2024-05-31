@@ -2,3 +2,4 @@ env
 .env
 .vscode
 supabase
+.fake_post_data

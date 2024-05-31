@@ -15,13 +15,13 @@ router = APIRouter(
 
 def return_previous_page(line_count: int, cur_page: int):
     # prev_page = "/carts/search/"
-    if line_count == 0 or cur_page <= 0:
+    if line_count == 0 or cur_page <= 1:
         return ""
-    remaining = ((int(line_count) - ((cur_page) * 5))) // 5
+    remaining = ((int(line_count) - ((cur_page) * 10))) // 10
     if remaining < -1:
         new_page = (line_count // 5)
     else:
-        new_page = cur_page
+        new_page = cur_page - 1
     return new_page
 
     # query = re.sub(r'search_page=\d+', f'search_page={new_page}', query)
@@ -30,10 +30,10 @@ def return_previous_page(line_count: int, cur_page: int):
 
 def return_next_page(line_count: int, cur_page: int):
     # prev_page = "/carts/search/"
-    remaining = ((int(line_count) - ((cur_page) * 5))) // 5
-    if remaining <= 0:
+    remaining = ((int(line_count) - ((cur_page) * 10))) // 10
+    if remaining < 0:
         return ""
-    new_page = cur_page + 2
+    new_page = cur_page + 1
     # if (cur_page == 0):
     # return prev_page + query + "&search_page=" + str(new_page)
     # query = re.sub(r'search_page=\d+', f'search_page={new_page}', query)
@@ -56,17 +56,19 @@ async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
 
         stmt = sqlalchemy.select(
             sqlalchemy.func.count()).select_from(models.post_table)
-        pages_available = connection.execute(stmt).scalar_one() // 10
+        pages_available = connection.execute(stmt).scalar_one()
         print(pages_available)
+        pages_available = pages_available // 10
 
-        if (pages_available - ((page - 1) * 10)) < 0:
+        if (pages_available - ((page - 1))) < 0:
             return {"prev": pages_available + 1, "next": "", "posts": []}
         stmt = sqlalchemy.text("""
-            SELECT p.post_id, p.date, p.user_id, p.post, 
+            SELECT p.post_id, p.date, p.user_id, u.username, p.post, 
             COUNT(DISTINCT c.id) AS comments, 
             COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes, 
             COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
             FROM "Posts" p
+            JOIN "User" u ON u.id = p.user_id
             LEFT JOIN "Comments" c ON c.post_id = p.post_id
             LEFT JOIN "Reactions" r ON r.post_id = p.post_id
             LEFT JOIN "Profile" pr ON pr.owner_id = p.user_id
@@ -77,18 +79,20 @@ async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
             WHERE username = :user
             ) f ON f.user_id = p.user_id
             WHERE pr.public = TRUE OR (pr.public = FALSE AND f.username = :user)
-            GROUP BY p.post_id, p.date, p.user_id, p.post
+            GROUP BY p.post_id, p.date, p.user_id,u.username, p.post
             ORDER BY date DESC
             OFFSET :offset
             LIMIT :limit
             """)
         posts = connection.execute(
             stmt, {"offset": (page-1)*10, "limit": 10, "user": user}).mappings().all()
+        print(len(posts))
         return {
-            "prev": return_previous_page(pages_available, page),
-            "next": return_next_page(pages_available, page),
+            "prev": return_previous_page(pages_available * 10, page),
+            "next": return_next_page(pages_available * 10, page),
             "posts": posts
         }
+
 
 @router.get("/following")
 async def view_following_page(token: Annotated[str, Depends(get_token)], page: int = 1):
@@ -139,7 +143,8 @@ async def view_following_page(token: Annotated[str, Depends(get_token)], page: i
             "next": return_next_page(pages_available, page),
             "posts": posts
         }
-    
+
+
 @router.get("/{id}")
 async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
     user = token
@@ -179,7 +184,8 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
                     detail="Invalid request."
                 )
             return post
-    
+
+
 @ router.post("/create")
 async def create_post(token: Annotated[str, Depends(get_token)], post: str):
     username = token
