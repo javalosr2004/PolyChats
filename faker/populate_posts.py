@@ -107,12 +107,14 @@ with engine.begin() as conn:
     """))
 
 
-num_users = 30000
+num_users = 10000
 fake = Faker()
 posts_sample_distribution = np.random.default_rng(
 ).negative_binomial(0.15, 0.01, num_users)
 comment_sample_distributions = np.random.default_rng(
-).negative_binomial(0.3, 0.015, num_users)
+).negative_binomial(0.3, 0.02, num_users)
+reaction_sample_distribuions = np.random.default_rng(
+).negative_binomial(0.3, 0.05, num_users)
 total_posts = 0
 follower_sample_distributions = np.random.default_rng(
 ).negative_binomial(0.3, 0.02, num_users)
@@ -163,10 +165,16 @@ with engine.begin() as conn:
             })
         # create a random number of comments per each user based on existing posts, i.f.f user count > 15
         if i > 15:
+            viewed_posts = set()
             posts_to_comment = np.random.choice(
                 total_posts, comment_sample_distributions[i])
+            posts_to_react = np.random.choice(
+                total_posts, reaction_sample_distribuions[i])
 
-            like_or_no_like = np.random.default_rng().random(len(posts_to_comment)) > 0.2
+            like_or_no_like = np.random.default_rng().random(
+                max(len(posts_to_react), len(posts_to_comment))) > 0.2
+
+            # adding comments
             for j in range(posts_to_comment.size):
                 post_id = posts_to_comment[j]
                 response_date = fake.date_time_between(start_date=min(
@@ -183,6 +191,24 @@ with engine.begin() as conn:
                     "like": bool(like_or_no_like[j]),
                     "created_at": response_date
                 })
+                viewed_posts.add(post_id)
+
+            # adding reactions
+            for j in range(posts_to_react.size):
+                post_id = posts_to_react[j]
+                if post_id in viewed_posts:
+                    continue
+
+                response_date = fake.date_time_between(start_date=min(
+                    posts[post_id]['date'], created_at), end_date='now', tzinfo=None)
+                reactions.append({
+                    "post_id": 1 + int(post_id),
+                    "user_id": user_id,
+                    "like": bool(like_or_no_like[j]),
+                    "created_at": response_date
+                })
+
+            # adding followers
             people_to_follow = np.random.choice(
                 i, follower_sample_distributions[i])
             for follow_id in people_to_follow:
@@ -216,5 +242,8 @@ with engine.begin() as conn:
     print("total posts: ", total_posts)
     print("total comments: ", len(comments))
     print("total users: ", num_users)
+    print("total followers: ", len(followers))
+    print("total reactions (likes / dislikes): ", len(reactions))
     # num users * 2 because Profile is created for each user
-    print("total records", len(comments) + total_posts + (num_users * 2))
+    print("total records", len(comments) + total_posts +
+          (num_users * 2) + len(followers) + len(reactions))
