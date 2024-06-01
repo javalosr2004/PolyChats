@@ -107,14 +107,14 @@ with engine.begin() as conn:
     """))
 
 
-num_users = 10000
+num_users = 20000
 fake = Faker()
 posts_sample_distribution = np.random.default_rng(
 ).negative_binomial(0.15, 0.01, num_users)
 comment_sample_distributions = np.random.default_rng(
-).negative_binomial(0.3, 0.02, num_users)
+).negative_binomial(0.4, 0.02, num_users)
 reaction_sample_distribuions = np.random.default_rng(
-).negative_binomial(0.3, 0.05, num_users)
+).negative_binomial(0.5, 0.05, num_users)
 total_posts = 0
 follower_sample_distributions = np.random.default_rng(
 ).negative_binomial(0.3, 0.02, num_users)
