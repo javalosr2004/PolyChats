@@ -39,7 +39,6 @@ def return_next_page(line_count: int, cur_page: int):
     # query = re.sub(r'search_page=\d+', f'search_page={new_page}', query)
     return new_page
 
-
 @router.get("/")
 async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
     user = token

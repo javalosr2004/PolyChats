@@ -58,29 +58,51 @@ async def create_comment(token: Annotated[str, Depends(get_token)], post_id: int
     
     return {"message": "Comment added successfully", "comment_id": comment_id}
 
-@router.delete("/comments/{comment_id}")
+@router.delete("/{comment_id}")
 async def delete_comment(token: Annotated[str, Depends(get_token)], comment_id: int):
-    user = token
-    if not user:
+    username = token
+    if not username:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    comments = models.comment_table
-
-    # Delete the comment if authorized
     with db.engine.begin() as connection:
-        stmt = sqlalchemy.delete(comments).where(comments.c.id == comment_id, comments.c.username == user)
-        result = connection.execute(stmt)
-        
-        if result.rowcount == 0:
+        users = models.user_table
+
+        # Fetch the user_id based on the username
+        find_username_stmt = sqlalchemy.select(users.c.id).where(users.c.username == username)
+
+        try:
+            user_result = connection.execute(find_username_stmt)
+            user_id = user_result.scalar()
+
+            if user_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found."
+                )
+
+            comments = models.comment_table
+
+            # Delete the comment if authorized
+            stmt = sqlalchemy.delete(comments).where(comments.c.id == comment_id, comments.c.user_id == user_id)
+            result = connection.execute(stmt)
+            
+            if result.rowcount == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Comment not found"
+                )
+            
+            connection.commit()
+
+        except Exception as e:
+            print(e)
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Comment not found"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unable to delete comment."
             )
-        
-        connection.commit()
 
     return {"message": "Comment deleted successfully"}

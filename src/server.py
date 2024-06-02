@@ -6,6 +6,7 @@ import logging
 from starlette.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from src.api import posts, auth, comments, followers, profile
+from src.timing_decorator import TimingMiddleware
 
 description = """
 Todo...
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_methods=["GET", "OPTIONS"],
     allow_headers=["*"],
 )
+
+app.middleware('http')(TimingMiddleware(app))
 
 # include routes
 app.include_router(posts.router)
