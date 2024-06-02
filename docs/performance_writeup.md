@@ -1,18 +1,18 @@
-e# Performance Reuslts
+# Performance Reuslts
 
 ## Posts
-- /posts/ View Posts: 1031.96 ms
-- /posts/following View Following Page: 150.86 ms
-- /posts/{id} View Post Id: 231.86 ms
-- /posts/create Create Post: 11.50 ms
-- /posts/delete/{post_id} Delete Post: 235.19 ms
-- /posts/update/{post_id} Update Post: 13.12 ms
-- /posts/react/{post_id} React To Post: 56.16 ms
+- `/posts/` View Posts: 1031.96 ms
+- `/posts/` following View Following Page: 150.86 ms
+- `/posts/{id}` View Post Id: 231.86 ms
+- `/posts/create` Create Post: 11.50 ms
+- `/posts/delete/{post_id}` Delete Post: 235.19 ms
+- `/posts/update/{post_id}` Update Post: 13.12 ms
+- /`posts/react/{post_id}` React To Post: 56.16 ms
 
 ## Auth
-- /auth/token Login: 6.12 ms
-- /auth/users Create Account: 20.42 ms
-- /auth/users/me Read Users Me: 6.74 ms
+- `/auth/token` Login: 6.12 ms
+- `/auth/users` Create Account: 20.42 ms
+- `/auth/users/me` Read Users Me: 6.74 ms
 
 ## Comments
 - `/comments/` Create Comment: 8.64 ms
