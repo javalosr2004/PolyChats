@@ -62,26 +62,31 @@ async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
         if (pages_available - ((page - 1))) < 0:
             return {"prev": pages_available + 1, "next": "", "posts": []}
         stmt = sqlalchemy.text("""
-            SELECT p.post_id, p.date, p.user_id, u.username, p.post, 
-            COUNT(DISTINCT c.id) AS comments, 
-            COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes, 
-            COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+            WITH filtered_posts AS (
+            SELECT p.post_id, p.date, p.user_id, p.post
             FROM "Posts" p
-            JOIN "User" u ON u.id = p.user_id
-            LEFT JOIN "Comments" c ON c.post_id = p.post_id
-            LEFT JOIN "Reactions" r ON r.post_id = p.post_id
-            LEFT JOIN "Profile" pr ON pr.owner_id = p.user_id
+            LEFT JOIN "Profile" pr ON p.user_id = pr.owner_id
             LEFT JOIN (
-            SELECT *
-            FROM "Followers" f1
-            JOIN "User" u ON u.id = f1.follower_id
-            WHERE username = :user
-            ) f ON f.user_id = p.user_id
-            WHERE pr.public = TRUE OR (pr.public = FALSE AND f.username = :user)
-            GROUP BY p.post_id, p.date, p.user_id,u.username, p.post
+                SELECT *
+                FROM "Followers" f1
+                JOIN "User" u ON u.id = f1.follower_id
+                WHERE username = :user
+            ) f ON p.user_id = f.user_id 
+            WHERE pr.public = TRUE OR ( pr.public = FALSE AND f.username = :user)
             ORDER BY date DESC
             OFFSET :offset
             LIMIT :limit
+            )
+            SELECT p.post_id, p.date, p.user_id, u.username, p.post,
+                COUNT(DISTINCT c.id) AS comments,
+                COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes,
+                COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+            FROM filtered_posts p
+            LEFT JOIN "User" u ON p.user_id = u.id 
+            LEFT JOIN "Comments" c ON p.post_id = c.post_id 
+            LEFT JOIN "Reactions" r ON p.post_id = r.post_id 
+            GROUP BY p.post_id, p.date, p.user_id, u.username, p.post
+            ORDER BY date DESC;
             """)
         posts = connection.execute(
             stmt, {"offset": (page-1)*10, "limit": 10, "user": user}).mappings().all()
@@ -115,25 +120,31 @@ async def view_following_page(token: Annotated[str, Depends(get_token)], page: i
         if (pages_available - ((page - 1) * 10)) < 0:
             return {"prev": pages_available + 1, "next": "", "posts": []}
         stmt = sqlalchemy.text("""
-            SELECT p.post_id, p.date, p.user_id, p.post, 
-            COUNT(DISTINCT c.id) AS comments, 
-            COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes, 
-            COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+            WITH filtered_posts AS (
+            SELECT p.post_id, p.date, p.user_id, p.post
             FROM "Posts" p
-            LEFT JOIN "Comments" c ON c.post_id = p.post_id
-            LEFT JOIN "Reactions" r ON r.post_id = p.post_id
-            LEFT JOIN "Profile" pr ON pr.owner_id = p.user_id
+            LEFT JOIN "Profile" pr ON p.user_id = pr.owner_id
             LEFT JOIN (
-            SELECT *
-            FROM "Followers" f1
-            JOIN "User" u ON u.id = f1.follower_id
-            WHERE username = :user
-            ) f ON f.user_id = p.user_id
+                SELECT *
+                FROM "Followers" f1
+                JOIN "User" u ON u.id = f1.follower_id
+                WHERE username = :user
+            ) f ON p.user_id = f.user_id 
             WHERE f.username = :user
-            GROUP BY p.post_id, p.date, p.user_id, p.post
             ORDER BY date DESC
             OFFSET :offset
             LIMIT :limit
+            )
+            SELECT p.post_id, p.date, p.user_id, u.username, p.post,
+                COUNT(DISTINCT c.id) AS comments,
+                COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes,
+                COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+            FROM filtered_posts p
+            LEFT JOIN "User" u ON p.user_id = u.id 
+            LEFT JOIN "Comments" c ON p.post_id = c.post_id 
+            LEFT JOIN "Reactions" r ON p.post_id = r.post_id 
+            GROUP BY p.post_id, p.date, p.user_id, u.username, p.post
+            ORDER BY date DESC;
             """)
         posts = connection.execute(
             stmt, {"offset": (page-1)*10, "limit": 10, "user": user}).mappings().all()
