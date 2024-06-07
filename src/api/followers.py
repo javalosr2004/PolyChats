@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.post("/{username}/follow")
+@router.post("/{username}")
 async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
     user = token
 
@@ -29,12 +29,15 @@ async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
         users = models.user_table
         followers = models.followers_table
 
-        find_user_stmt = sqlalchemy.select(users.c.id).where(users.c.username == username)
-        find_follower_stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
+        find_user_stmt = sqlalchemy.select(
+            users.c.id).where(users.c.username == username)
+        find_follower_stmt = sqlalchemy.select(
+            users.c.id).where(users.c.username == user)
 
         try:
             user_id = connection.execute(find_user_stmt).scalar_one_or_none()
-            follower_id = connection.execute(find_follower_stmt).scalar_one_or_none()
+            follower_id = connection.execute(
+                find_follower_stmt).scalar_one_or_none()
 
             if not user_id:
                 raise HTTPException(
@@ -78,7 +81,7 @@ async def follow_user(token: Annotated[str, Depends(get_token)], username: str):
     return {"message": "Followed successfully"}
 
 
-@router.delete("/{username}/unfollow")
+@router.delete("/{username}")
 async def unfollow_user(token: Annotated[str, Depends(get_token)], username: str):
     user = token
 
@@ -94,11 +97,14 @@ async def unfollow_user(token: Annotated[str, Depends(get_token)], username: str
         users = models.user_table
         followers = models.followers_table
 
-        find_user_stmt = sqlalchemy.select(users.c.id).where(users.c.username == username)
-        find_follower_stmt = sqlalchemy.select(users.c.id).where(users.c.username == user)
+        find_user_stmt = sqlalchemy.select(
+            users.c.id).where(users.c.username == username)
+        find_follower_stmt = sqlalchemy.select(
+            users.c.id).where(users.c.username == user)
 
         user_id = connection.execute(find_user_stmt).scalar_one_or_none()
-        follower_id = connection.execute(find_follower_stmt).scalar_one_or_none()
+        follower_id = connection.execute(
+            find_follower_stmt).scalar_one_or_none()
 
         if not user_id:
             raise HTTPException(

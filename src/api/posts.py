@@ -5,6 +5,7 @@ from src import database as db, models
 from sqlalchemy import func
 from src.api.auth import get_token
 from typing import Annotated
+from src.models import *
 
 router = APIRouter(
     prefix="/posts",
@@ -39,6 +40,7 @@ def return_next_page(line_count: int, cur_page: int):
     # query = re.sub(r'search_page=\d+', f'search_page={new_page}', query)
     return new_page
 
+
 @router.get("/")
 async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
     user = token
@@ -54,7 +56,7 @@ async def view_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
     with db.engine.begin() as connection:
 
         stmt = sqlalchemy.select(
-            sqlalchemy.func.count()).select_from(models.post_table)
+            sqlalchemy.func.count()).select_from(models.post_table).join(profile_table, profile_table.c.owner_id == post_table.c.user_id).where(profile_table.c.public == True)
         pages_available = connection.execute(stmt).scalar_one()
         print(pages_available)
         pages_available = pages_available // 10
@@ -155,6 +157,60 @@ async def view_following_page(token: Annotated[str, Depends(get_token)], page: i
         }
 
 
+@router.get("/my-posts")
+async def view_my_posts(token: Annotated[str, Depends(get_token)], page: int = 1):
+    user = token
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if page < 1:
+        page = 1
+
+    with db.engine.begin() as connection:
+        # Calculate total pages available
+        stmt = sqlalchemy.select(
+            sqlalchemy.func.count()).select_from(models.post_table).join(user_table, user_table.c.id == post_table.c.user_id).where(user_table.c.username == user)
+        total_posts = connection.execute(stmt).scalar_one()
+        pages_available = total_posts // 10
+
+        if (pages_available - ((page - 1))) < 0:
+            return {"prev": pages_available + 1, "next": "", "posts": []}
+
+        stmt = sqlalchemy.text("""
+            WITH filtered_posts AS (
+            SELECT p.post_id, p.date, p.user_id, u.username, p.post
+            FROM "Posts" p
+            LEFT JOIN "Profile" pr ON p.user_id = pr.owner_id
+            JOIN "User" AS u ON p.user_id = u.id
+            WHERE u.username = :username
+            ORDER BY date DESC
+            OFFSET :offset
+            LIMIT :limit
+            )
+            SELECT p.post_id, p.date, p.user_id, p.username, p.post,
+                COUNT(DISTINCT c.id) AS comments,
+                COUNT(DISTINCT CASE WHEN r.like = true THEN r.id ELSE NULL END) AS likes,
+                COUNT(DISTINCT CASE WHEN r.like = false THEN r.id ELSE NULL END) AS dislikes
+            FROM filtered_posts p
+            LEFT JOIN "Comments" c ON p.post_id = c.post_id
+            LEFT JOIN "Reactions" r ON p.post_id = r.post_id
+            GROUP BY p.post_id, p.date, p.user_id, p.username, p.post
+            ORDER BY date DESC;
+            """)
+        posts = connection.execute(
+            stmt, {"username": user, "offset": (page-1)*10, "limit": 10}).mappings().all()
+
+        print(total_posts)
+        return {
+            "prev": return_previous_page(total_posts, page),
+            "next": return_next_page(total_posts, page),
+            "posts": posts
+        }
+
+
 @router.get("/{id}")
 async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
     user = token
@@ -196,7 +252,44 @@ async def view_post_id(token: Annotated[str, Depends(get_token)], id: int):
             return post
 
 
-@ router.post("/create")
+@router.get("/{id}/comments")
+async def view_post_comments(token: Annotated[str, Depends(get_token)], id: int):
+    user = token
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    with db.engine.begin() as connection:
+        # attempt to find post with given id
+        if id >= 0:
+            #
+            stmt = sqlalchemy.text("""
+                SELECT c.date, u.username, c.content
+                FROM "Comments" c
+                JOIN "User" u ON u.id = c.user_id
+                LEFT JOIN "Posts" p ON p.post_id = c.post_id
+                LEFT JOIN "Profile" pr ON pr.owner_id = p.user_id
+                LEFT JOIN (
+                    SELECT *
+                    FROM "Followers" f1
+                    JOIN "User" u ON u.id = f1.follower_id
+                    WHERE username = :user
+                ) f ON f.user_id = p.user_id
+                WHERE c.post_id = :post_id AND (pr.public = TRUE OR (pr.public = FALSE AND f.username = :user))
+                """)
+            post = connection.execute(
+                stmt, {"post_id": id, "user": user}).mappings().all()
+            if not post:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid request. Could not find post."
+                )
+            return post
+
+
+@ router.post("/")
 async def create_post(token: Annotated[str, Depends(get_token)], post: str):
     username = token
     post_id = None
